@@ -11,7 +11,7 @@ export class Actor {
   name: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  image_url: string | null;
+  img_url: string | null;
 
   @OneToMany(() => MovieCast, (movieCast) => movieCast.actor)
   movie_casts: MovieCast[];

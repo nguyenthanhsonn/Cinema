@@ -1,14 +1,12 @@
 export enum MovieAgeRating {
-  P = 'p',
-  K = 'k',
-  T13 = 't13',
-  T16 = 't16',
-  T18 = 't18',
+  P = 'p', // Phổ biến
+  K = 'k', // Không phù hợp với trẻ em dưới 13 tuổi
+  T13 = '13 tuổi', // Không phù hợp với trẻ em dưới 13 tuổi
+  T16 = '16 tuổi', // Không phù hợp với trẻ em dưới 16 tuổi
+  T18 = '18 tuổi', // Không phù hợp với trẻ em dưới 18 tuổi
 }
 
 export enum MovieStatus {
-  COMING_SOON = 'coming_soon',
-  NOW_SHOWING = 'now_showing',
-  ENDED = 'ended',
-  INACTIVE = 'inactive',
+  NOW_SHOWING = 'ĐANG CHIẾU',
+  COMING_SOON = 'SẮP CHIẾU',
 }

@@ -16,10 +16,6 @@ export class Movie extends TimestampedEntity {
   @Column({ type: 'varchar', length: 200 })
   title: string;
 
-  @Index({ unique: true })
-  @Column({ type: 'varchar', length: 200 })
-  slug: string;
-
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
@@ -30,9 +26,6 @@ export class Movie extends TimestampedEntity {
   poster_url: string | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  banner_url: string | null;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
   trailer_url: string | null;
 
   @Index()
@@ -40,13 +33,13 @@ export class Movie extends TimestampedEntity {
   director: string | null;
 
   @Column({ type: 'date', nullable: true })
-  release_date: string | null;
+  start_date: string | null;
+
+  @Column({ type: 'date', nullable: true })
+  end_date: string | null;
 
   @Column({ type: 'enum', enum: MovieAgeRating, nullable: true })
   age_rating: MovieAgeRating | null;
-
-  @Column({ type: 'decimal', precision: 3, scale: 1, nullable: true })
-  critic_score: string | null;
 
   @Column({ type: 'decimal', precision: 3, scale: 1, nullable: true })
   audience_score: string | null;

@@ -1,5 +1,4 @@
 import {
-  Column,
   Entity,
   Index,
   JoinColumn,
@@ -30,9 +29,4 @@ export class MovieCast {
   @JoinColumn({ name: 'actor_id' })
   actor: Actor;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  role_name: string | null;
-
-  @Column({ type: 'int', default: 0 })
-  display_order: number;
 }
