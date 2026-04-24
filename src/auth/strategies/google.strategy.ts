@@ -31,8 +31,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google'){
             avatar_url: profile.photos?.[0]?.value ?? null,
             // provider_id la id cua tai khoan Google (profile.id)
             provider_id: profile.id,
-            access_token: access_token,
-            refresh_token: refresh_token
         };
 
         done(null, googleUser);
