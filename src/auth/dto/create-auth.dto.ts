@@ -1,4 +1,5 @@
-import { IsDateString, IsEmail, IsString, MinLength } from 'class-validator';
+import { IsDateString, IsEmail, IsEnum, IsString, MinLength } from 'class-validator';
+import { Gender } from 'src/user/enums/gender.enum';
 
 export class CreateAuthDto {
   @IsString()
@@ -17,6 +18,7 @@ export class CreateAuthDto {
   @IsDateString()
   birth_date: string;
 
-  @IsString()
-  gender: string;
+  @IsEnum(Gender)
+  gender: Gender;
 }
+

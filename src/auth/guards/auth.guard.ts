@@ -19,9 +19,9 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request & { user?: unknown }>();
     const token = this.extractTokenFromHeader(request);
 
-    console.log('Authorization:', request.headers.authorization);
-    console.log('Cookie header:', request.headers.cookie);
-    console.log('Extracted token:', token);
+    // console.log('Authorization:', request.headers.authorization);
+    // console.log('Cookie header:', request.headers.cookie);
+    // console.log('Extracted token:', token);
 
     if (!token) {
       throw new UnauthorizedException();
@@ -53,22 +53,6 @@ export class AuthGuard implements CanActivate {
   }
 
   private extractTokenFromCookie(request: Request, cookieName: string) {
-    const cookieHeader = request.headers.cookie;
-    if (!cookieHeader) {
-      return undefined;
-    }
-
-    // Trường hợp chưa dùng cookie-parser, mình parse thẳng từ header "Cookie".
-    // Format thường là: "access_token=...; refresh_token=..."
-    const cookies = cookieHeader.split(';').map((cookie) => cookie.trim());
-    const targetCookie = cookies.find((cookie) =>
-      cookie.startsWith(`${cookieName}=`),
-    );
-
-    if (!targetCookie) {
-      return undefined;
-    }
-
-    return decodeURIComponent(targetCookie.split('=').slice(1).join('='));
+    return request.cookies?.[cookieName];
   }
 }

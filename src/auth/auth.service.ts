@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
 import { UserService } from 'src/user/user.service';
@@ -56,7 +56,10 @@ export class AuthService {
 
   // generate access_token va refresh_token
   private async generateToken(payload: { id: string, email: string, role: UserRole }) {
-    const access_token = await this.jwtService.signAsync(payload);
+    const access_token = await this.jwtService.signAsync(payload, {
+      secret: this.configService.getOrThrow<string>('JWT_SECRET'),
+      expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN') as JwtSignOptions['expiresIn']
+    });
     // secret dùng để sign refresh_token
     const refresh_token = await this.jwtService.signAsync(payload,
       {
@@ -71,22 +74,24 @@ export class AuthService {
 
   // refresh_token
   async refresh(refresh_token: string): Promise<any> {
+    let verify: { id: string; email: string; role: UserRole };
+
     try {
-      // verify refresh_token
-      const verify = await this.jwtService.verifyAsync(refresh_token, {
+      verify = await this.jwtService.verifyAsync(refresh_token, {
         secret: this.configService.getOrThrow<string>('JWT_SECRET'),
       });
-      this.logger.log(verify);
-      // check refresh_token có tồn tại trong database không
-      const checkExistRefresh = await this.userRepo.findOneBy({ email: verify.email, refreshToken: refresh_token });
-      if (checkExistRefresh) {
-        return this.generateToken({ id: verify.id, email: verify.email, role: verify.role });
-      } else {
-        throw new HttpException('Refresh token is not valid', HttpStatus.BAD_REQUEST);
-      }
-    } catch (error) {
-      throw new HttpException('Refresh token is not valid', HttpStatus.BAD_REQUEST);
+    } catch {
+      throw new UnauthorizedException('Refresh token không hợp lệ hoặc đã hết hạn');
     }
+
+    const hash = crypto.createHash('sha256').update(refresh_token).digest('hex');
+    const user = await this.userRepo.findOneBy({ email: verify.email, refreshToken: hash });
+
+    if (!user) {
+      throw new UnauthorizedException('Refresh token không hợp lệ hoặc đã hết hạn');
+    }
+
+    return this.generateToken({ id: verify.id, email: verify.email, role: verify.role });
   }
 
   // Map role sang string
@@ -149,16 +154,15 @@ export class AuthService {
   // Đăng nhập
   async login(login: LoginDto): Promise<LoginResponseDto> {
     const user = await this.userService.findUserByEmail(login.email);
-    if (!user) throw new HttpException('Email không tồn tại', HttpStatus.UNAUTHORIZED);
+    if (!user) throw new UnauthorizedException('Email không tồn tại');
     // Neu tai khoan la Google/OAuth thi KHONG cho login bang mat khau.
-    if (user.authProvider !== 'local' || !user.password_hash) {
-      throw new HttpException(
+    if (user.auth_provider !== 'local' || !user.password_hash) {
+      throw new UnauthorizedException(
         'Tài khoản này đăng nhập bằng Google, vui lòng dùng Google Sign-In',
-        HttpStatus.UNAUTHORIZED,
       );
     }
     const checkPassword = await bcrypt.compare(login.password, user.password_hash);
-    if (!checkPassword) throw new HttpException('Mật khẩu không đúng', HttpStatus.UNAUTHORIZED);
+    if (!checkPassword) throw new UnauthorizedException('Mật khẩu không đúng');
 
     // generate access_token va refresh_token
     const payload = { id: user.id, email: user.email, role: user.role }
@@ -260,7 +264,7 @@ export class AuthService {
       };
 
     } catch (error) {
-      this.logger.error(`[GoogleAuth] Login failed for ${googleUser.email}`,error.stack);
+      this.logger.error(`[GoogleAuth] Login failed for ${googleUser.email}`, error.stack);
       throw error;
     }
   }
@@ -318,7 +322,6 @@ export class AuthService {
         user.passwordResetTokenHash = null;
         user.passwordResetTokenExpiresAt = null;
         await this.userRepo.save(user);
-        throw new HttpException('Token không hợp lệ hoặc đã hết hạn', HttpStatus.BAD_REQUEST);
       }
 
       // Cập nhật mật khẩu và dọn token trong cùng một lần save
@@ -327,20 +330,23 @@ export class AuthService {
       user.passwordResetTokenHash = null;
       user.passwordResetTokenExpiresAt = null;
       await this.userRepo.save(user);
+      throw new BadRequestException('Token không hợp lệ hoặc đã hết hạn');
 
       return 'Đặt lại mật khẩu thành công';
     } catch (error) {
-      throw new HttpException('Đặt lại mật khẩu thất bại', HttpStatus.BAD_REQUEST);
+      if (error instanceof HttpException) throw error; // re-throw lỗi đã xử lý
+      throw new InternalServerErrorException('Đặt lại mật khẩu thất bại');
     }
   }
 
   // change password
   async changePassword(changePassword: ChangePasswordDto, userId: string): Promise<ChangePasswordResDto> {
     const user = await this.userService.findUserById(userId);
-    if (!user) throw new HttpException('Tài khoản không tồn tại', HttpStatus.BAD_REQUEST);
+    if (!user) throw new BadRequestException('Tài khoản không tồn tại');
+    if(!user.password_hash) throw new BadRequestException('Tài khoản này không dùng mật khẩu');
 
     const checkPassword = await bcrypt.compare(changePassword.old_password, user.password_hash);
-    if (!checkPassword) throw new HttpException('Mật khẩu cũ không đúng', HttpStatus.BAD_REQUEST);
+    if (!checkPassword) throw new BadRequestException('Mật khẩu cũ không đúng');
 
     // updatePass() đã tự hash mật khẩu mới, nên chỉ cần truyền raw password
     // để tránh hash 2 lần (hash(hash(password))).
