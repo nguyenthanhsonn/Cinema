@@ -76,9 +76,7 @@ export class MovieService {
       }
 
       const savedMovie = await this.dataSource.transaction(async (manager) => {
-
         const movieRepository = manager.getRepository(Movie);
-
         const genreRepository = manager.getRepository(Genre);
         const actorRepository = manager.getRepository(Actor);
         const movieGenreRepository = manager.getRepository(MovieGenre);
@@ -87,6 +85,7 @@ export class MovieService {
         const movie = (await manager.save(
           Movie,
           {
+
 
         const movie = await movieRepository.save(
           movieRepository.create({
@@ -102,6 +101,7 @@ export class MovieService {
             status: dto.status as MovieStatus,
           } as Partial<Movie>,
         )) as Movie;
+
             start_date: dto.start_date,
             end_date: dto.end_date,
             age_rating: dto.age_rating as Movie['age_rating'],

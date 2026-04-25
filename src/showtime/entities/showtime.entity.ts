@@ -67,8 +67,17 @@ export class Showtime extends TimestampedEntity {
   })
   format: ScreeningFormat;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: '0' })
-  base_price: string;
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: '0',
+    transformer: {
+      to: (val: number) => val,
+      from: (val: string) => parseFloat(val),
+    },
+  })
+  base_price: number;
 
   @Column({
     type: 'enum',
