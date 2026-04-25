@@ -1,18 +1,16 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { CreateMovieDto } from './dto/resquest/create-movie.dto';
-// import { UpdateMovieDto } from './dto/update-movie.dto';
+import { DetailMovieResponseDto } from './dto/resquest/detail-movie-res.dto';
+import { CreateMovieResponseDto } from './dto/response/create-movie-response.dto';
+import { GetShowingMoviesResponseDto } from './dto/response/get-movie-response.dto';
+import { MovieStatus } from './enums/movie.enum';
 import { Actor } from './entities/actor.entity';
 import { Genre } from './entities/genre.entity';
 import { MovieCast } from './entities/movie-cast.entity';
 import { MovieGenre } from './entities/movie-genre.entity';
 import { Movie } from './entities/movie.entity';
-import { Review } from './entities/review.entity';
-import { GetShowingMoviesResponseDto } from './dto/response/get-movie-response.dto';
-import { MovieStatus } from './enums/movie.enum';
-import { CreateMovieResponseDto } from './dto/response/create-movie-response.dto';
-import { DataSource } from 'typeorm';
 
 @Injectable()
 export class MovieService {
@@ -23,141 +21,210 @@ export class MovieService {
     private readonly genreRepository: Repository<Genre>,
     @InjectRepository(Actor)
     private readonly actorRepository: Repository<Actor>,
-    @InjectRepository(MovieGenre)
-    private readonly movieGenreRepository: Repository<MovieGenre>,
-    @InjectRepository(MovieCast)
-    private readonly movieCastRepository: Repository<MovieCast>,
     private readonly dataSource: DataSource,
-  ) { }
+  ) {}
 
   private findMovieByTitle(title: string): Promise<Movie[]> {
     return this.movieRepository.find({ where: { title } });
   }
-  // Lấy tất cả thể loại
+
+  private normalizeNames(names: string[] | undefined): string[] {
+    if (!Array.isArray(names)) {
+      return [];
+    }
+
+    return [...new Set(names.map((name) => name?.trim()).filter(Boolean))];
+  }
+
   async getAllGenre(): Promise<Genre[]> {
     return this.genreRepository.find();
   }
 
-  //Lấy phim đang chiếu
   async getShowingMovies(): Promise<GetShowingMoviesResponseDto> {
     const movies = await this.movieRepository.find({
       where: { status: MovieStatus.NOW_SHOWING },
-      relations: ['movie_genres', 'movie_genres.genre']
+      relations: ['movie_genres', 'movie_genres.genre'],
     });
 
     return {
       success: true,
       data: {
         message: 'Lấy phim đang chiếu thành công',
-        movies: movies.map(movie => ({
-          id: movie.id, // id của phim
-          title: movie.title, // tên phim
-          duration_minutes: movie.duration_minutes, // thời lượng phim
-          genre: movie.movie_genres?.map(mg => mg.genre?.name) || [], // thể loại phim
-          status: movie.status as string, // trạng thái phim
-          age_rating: movie.age_rating ? (movie.age_rating as string) : 'P', // độ tuổi phù hợp
-          poster_url: movie.poster_url || '', // ảnh bìa phim
-          start_date: movie.start_date ? new Date(movie.start_date) : new Date() // ngày bắt đầu chiếu
-        }))
-      }
+        movies: movies.map((movie) => ({
+          id: movie.id,
+          title: movie.title,
+          duration_minutes: movie.duration_minutes,
+          genre: movie.movie_genres?.map((movieGenre) => movieGenre.genre?.name) || [],
+          status: movie.status as string,
+          age_rating: movie.age_rating ? (movie.age_rating as string) : 'P',
+          poster_url: movie.poster_url || '',
+          start_date: movie.start_date ? new Date(movie.start_date) : new Date(),
+        })),
+      },
     };
   }
 
-
-  // tạo phim
   async createFilm(dto: CreateMovieDto): Promise<CreateMovieResponseDto> {
     try {
-      const find_film = await this.findMovieByTitle(dto.title);
-      if (find_film.length > 0) {
+      const title = dto.title.trim();
+      const genreNames = this.normalizeNames(dto.genre);
+      const actorNames = this.normalizeNames(dto.actor);
+
+      const existingMovies = await this.findMovieByTitle(title);
+      if (existingMovies.length > 0) {
         throw new HttpException('Phim đã tồn tại', 400);
       }
 
-      // tạo và lưu phim
       const savedMovie = await this.dataSource.transaction(async (manager) => {
-        const movieResult = await manager
-          .createQueryBuilder() // tạo query builder
-          .insert()
-          .into('movies') // tên bảng trong database
-          .values({
-            title: dto.title,
+        const genreRepository = manager.getRepository(Genre);
+        const actorRepository = manager.getRepository(Actor);
+        const movieGenreRepository = manager.getRepository(MovieGenre);
+        const movieCastRepository = manager.getRepository(MovieCast);
+
+        const movie = (await manager.save(
+          Movie,
+          {
+            title,
             description: dto.description,
             duration_minutes: dto.duration_minutes,
             poster_url: dto.poster_url,
             trailer_url: dto.trailer_url,
             director: dto.director,
-            start_date: dto.start_date,
-            end_date: dto.end_date,
-            age_rating: dto.age_rating,
-            status: dto.status
-          })
-          .returning('id') // trả về id của phim vừa tạo
-          .execute(); // thực thi query
+            start_date: dto.start_date as unknown as Movie['start_date'],
+            end_date: dto.end_date as unknown as Movie['end_date'],
+            age_rating: dto.age_rating as Movie['age_rating'],
+            status: dto.status as MovieStatus,
+          } as Partial<Movie>,
+        )) as Movie;
 
-          // lấy id của phim vừa tạo
-          const movieId = movieResult.raw[0].id;
+        const genres =
+          genreNames.length > 0
+            ? await genreRepository.find({
+                where: { name: In(genreNames) },
+              })
+            : [];
 
+        const missingGenres = genreNames.filter(
+          (name) => !genres.some((genre) => genre.name === name),
+        );
 
-          // insert movie_genres
-          const genres = await manager
-          .createQueryBuilder()
-          .select('g.id', 'id') // lấy id của thể loại
-          .from('genres', 'g') // tên bảng
-          .where('g.name IN (:...names)', {names: dto.genre}) // điều kiện tìm kiếm thể loại theo tên 
-          .getRawMany();
+        if (missingGenres.length > 0) {
+          throw new HttpException(`Không tìm thấy thể loại: ${missingGenres.join(', ')}`, 400);
+        }
 
-          if(genres.length > 0){
-            await manager
-                  .createQueryBuilder()
-                  .insert()
-                  .into('movie_genres')
-                  .values(
-                    genres.map(g => ({
-                      movie_id: movieId,
-                      genre_id: g.id
-                    }))
-                  )
-                  .execute();
-          }
+        if (genres.length > 0) {
+          await movieGenreRepository.insert(
+            genres.map((genre) => ({
+              movie_id: movie.id,
+              genre_id: genre.id,
+            })),
+          );
+        }
 
-          // insert movie_casts
-          const movie_casts = await manager
-                .createQueryBuilder()
-                .insert()
-                .into('movie_casts')
-                .values(
-                  dto.actor.map(actor => )
-                )
-      }
-      
-      
-      
-      
-      
+        const existingActors =
+          actorNames.length > 0
+            ? await actorRepository.find({
+                where: { name: In(actorNames) },
+              })
+            : [];
+
+        const missingActorNames = actorNames.filter(
+          (name) => !existingActors.some((actor) => actor.name === name),
+        );
+
+        if (missingActorNames.length > 0) {
+          await actorRepository.insert(
+            missingActorNames.map((name) => ({
+              name,
+            })),
+          );
+        }
+
+        const actors =
+          actorNames.length > 0
+            ? await actorRepository.find({
+                where: { name: In(actorNames) },
+              })
+            : [];
+
+        if (actors.length > 0) {
+          await movieCastRepository.insert(
+            actors.map((actor) => ({
+              movie_id: movie.id,
+              actor_id: actor.id,
+            })),
+          );
+        }
+
+        return {
+          movie,
+          genres: genres.map((genre) => genre.name),
+          actors: actorNames,
+        };
+      });
 
       return {
         success: true,
         data: {
           message: 'Tạo phim thành công',
           movie: {
-            id: savedMovie.id,
-            title: savedMovie.title,
-            description: savedMovie.description || '',
-            duration_minutes: savedMovie.duration_minutes,
-            genre: genre || [],
-            status: savedMovie.status,
-            age_rating: savedMovie.age_rating || 'P',
-            poster_url: savedMovie.poster_url || '',
-            trailer_url: savedMovie.trailer_url || '',
-            director: savedMovie.director || '',
-            actor: actor || [],
-            start_date: new Date(savedMovie.start_date || new Date()),
-            end_date: new Date(savedMovie.end_date || new Date())
-          }
-        }
-      }
+            id: savedMovie.movie.id,
+            title: savedMovie.movie.title,
+            description: savedMovie.movie.description || '',
+            duration_minutes: savedMovie.movie.duration_minutes,
+            genre: savedMovie.genres,
+            status: savedMovie.movie.status,
+            age_rating: savedMovie.movie.age_rating || 'P',
+            poster_url: savedMovie.movie.poster_url || '',
+            trailer_url: savedMovie.movie.trailer_url || '',
+            director: savedMovie.movie.director || '',
+            actor: savedMovie.actors,
+            start_date: new Date(savedMovie.movie.start_date || new Date()),
+            end_date: new Date(savedMovie.movie.end_date || new Date()),
+          },
+        },
+      };
     } catch (error) {
-      if (error instanceof HttpException) throw error;
-      throw new HttpException('Tạo phim thất bại: ' + error.message, 500);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(`Tạo phim thất bại: ${error.message}`, 500);
     }
+  }
+
+  async getMovieById(id: string): Promise<DetailMovieResponseDto> {
+    const movie = await this.movieRepository.findOne({
+      where: { id },
+      relations: [
+        'movie_genres',
+        'movie_genres.genre',
+        'movie_casts',
+        'movie_casts.actor',
+      ],
+    });
+
+    if (!movie) {
+      throw new NotFoundException('Không tìm thấy phim');
+    }
+
+    return {
+      success: true,
+      data: {
+        id: movie.id,
+        title: movie.title,
+        description: movie.description || '',
+        duration_minutes: movie.duration_minutes,
+        poster_url: movie.poster_url || '',
+        trailer_url: movie.trailer_url || '',
+        director: movie.director || '',
+        age_rating: movie.age_rating || 'P',
+        status: movie.status,
+        start_date: movie.start_date ? new Date(movie.start_date) : new Date(),
+        end_date: movie.end_date ? new Date(movie.end_date) : new Date(),
+        genre: movie.movie_genres?.map((movieGenre) => movieGenre.genre?.name) || [],
+        actor: movie.movie_casts?.map((movieCast) => movieCast.actor?.name) || [],
+      },
+    };
   }
 }
