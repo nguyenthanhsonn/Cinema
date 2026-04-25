@@ -7,7 +7,6 @@ export class MovieGenre {
   @PrimaryColumn('uuid')
   movie_id: string;
 
-  @Index()
   @PrimaryColumn('uuid')
   genre_id: string;
 

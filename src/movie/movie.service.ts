@@ -76,6 +76,9 @@ export class MovieService {
       }
 
       const savedMovie = await this.dataSource.transaction(async (manager) => {
+
+        const movieRepository = manager.getRepository(Movie);
+
         const genreRepository = manager.getRepository(Genre);
         const actorRepository = manager.getRepository(Actor);
         const movieGenreRepository = manager.getRepository(MovieGenre);
@@ -84,6 +87,9 @@ export class MovieService {
         const movie = (await manager.save(
           Movie,
           {
+
+        const movie = await movieRepository.save(
+          movieRepository.create({
             title,
             description: dto.description,
             duration_minutes: dto.duration_minutes,
@@ -96,7 +102,12 @@ export class MovieService {
             status: dto.status as MovieStatus,
           } as Partial<Movie>,
         )) as Movie;
-
+            start_date: dto.start_date,
+            end_date: dto.end_date,
+            age_rating: dto.age_rating as Movie['age_rating'],
+            status: dto.status as MovieStatus,
+          }),
+        );
         const genres =
           genreNames.length > 0
             ? await genreRepository.find({
@@ -110,6 +121,12 @@ export class MovieService {
 
         if (missingGenres.length > 0) {
           throw new HttpException(`Không tìm thấy thể loại: ${missingGenres.join(', ')}`, 400);
+
+
+          throw new HttpException(
+            `Không tìm thấy thể loại: ${missingGenres.join(', ')}`,
+            400,
+          );
         }
 
         if (genres.length > 0) {
