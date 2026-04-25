@@ -90,21 +90,18 @@ export class MovieService {
 
         const movie = await movieRepository.save(
           movieRepository.create({
-
             title,
             description: dto.description,
             duration_minutes: dto.duration_minutes,
             poster_url: dto.poster_url,
             trailer_url: dto.trailer_url,
             director: dto.director,
-
             start_date: dto.start_date as unknown as Movie['start_date'],
             end_date: dto.end_date as unknown as Movie['end_date'],
             age_rating: dto.age_rating as Movie['age_rating'],
             status: dto.status as MovieStatus,
           } as Partial<Movie>,
         )) as Movie;
-
             start_date: dto.start_date,
             end_date: dto.end_date,
             age_rating: dto.age_rating as Movie['age_rating'],
@@ -125,11 +122,11 @@ export class MovieService {
         if (missingGenres.length > 0) {
           throw new HttpException(`Không tìm thấy thể loại: ${missingGenres.join(', ')}`, 400);
 
+
           throw new HttpException(
             `Không tìm thấy thể loại: ${missingGenres.join(', ')}`,
             400,
           );
-
         }
 
         if (genres.length > 0) {

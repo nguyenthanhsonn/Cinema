@@ -18,6 +18,7 @@ export class DetailMovieResponseDto {
   };
 }
 
+
     success: boolean;
     data: {
         id: string,
@@ -35,4 +36,5 @@ export class DetailMovieResponseDto {
         actor: string[],
     }
 }
+
 
