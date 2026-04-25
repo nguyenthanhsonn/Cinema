@@ -68,15 +68,6 @@ export class Booking extends TimestampedEntity {
   @JoinColumn({ name: 'cinema_id' })
   cinema: Cinema;
 
-  @Index()
-  @Column({ type: 'uuid' })
-  movie_id: string;
-
-  @ManyToOne(() => Movie, (movie) => movie.bookings, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'movie_id' })
-  movie: Movie;
 
   @Column({ type: 'varchar', length: 160 })
   customer_name: string;
