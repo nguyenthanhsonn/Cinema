@@ -8,10 +8,12 @@ import { MovieCast } from './entities/movie-cast.entity';
 import { MovieGenre } from './entities/movie-genre.entity';
 import { Movie } from './entities/movie.entity';
 import { Review } from './entities/review.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Movie, Genre, Actor, MovieGenre, MovieCast, Review]),
+    AuthModule,
   ],
   controllers: [MovieController],
   providers: [MovieService],
