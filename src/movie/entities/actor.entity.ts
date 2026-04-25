@@ -1,8 +1,10 @@
 import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { MovieCast } from './movie-cast.entity';
+import { TimestampedEntity } from '../../common/entities/timestamped.entity';
+
 
 @Entity('actors')
-export class Actor {
+export class Actor extends TimestampedEntity{
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
