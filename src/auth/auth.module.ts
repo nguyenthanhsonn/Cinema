@@ -9,6 +9,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { CustomerProfile } from 'src/user/entities/customer-profile.entity';
 import { AuthGuard } from './guards/auth.guard';
+import { RoleGuard } from './guards/role.guard';
+
 import googleOauthConfig from 'src/config/google-oauth.config';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { MailModule } from 'src/mail/email.module';
@@ -42,7 +44,9 @@ import { MailModule } from 'src/mail/email.module';
     MailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthGuard, GoogleStrategy],
-  exports: [AuthGuard, JwtModule],
+  providers: [AuthService, AuthGuard, RoleGuard, GoogleStrategy],
+
+  exports: [AuthGuard, RoleGuard, JwtModule],
+
 })
 export class AuthModule {}
