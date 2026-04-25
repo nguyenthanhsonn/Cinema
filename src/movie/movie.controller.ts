@@ -27,4 +27,9 @@ export class MovieController {
   async getShowingMovies() {
     return this.movieService.getShowingMovies();
   }
+
+  @Get(':id')
+  async detailMovie(@Param('id') id: string){
+    return this.movieService.getMovieById(id);
+  }
 }
