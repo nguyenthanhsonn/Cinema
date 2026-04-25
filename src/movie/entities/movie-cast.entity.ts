@@ -7,13 +7,13 @@ import {
 } from 'typeorm';
 import { Actor } from './actor.entity';
 import { Movie } from './movie.entity';
+import { TimestampedEntity } from '../../common/entities/timestamped.entity';
 
 @Entity('movie_casts')
-export class MovieCast {
+export class MovieCast extends TimestampedEntity{
   @PrimaryColumn('uuid')
   movie_id: string;
 
-  @Index()
   @PrimaryColumn('uuid')
   actor_id: string;
 

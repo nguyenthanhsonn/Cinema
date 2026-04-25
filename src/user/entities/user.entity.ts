@@ -13,7 +13,7 @@ export class User extends TimestampedEntity {
   email: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  password_hash: string;
+  password_hash: string | null;
 
   @Column({ type: 'varchar', length: 160 })
   full_name: string;
@@ -41,10 +41,11 @@ export class User extends TimestampedEntity {
 
   // Nguon dang nhap (local | google).
   // Dung de phan biet login bang mat khau hay social login.
-  @Column({ type: 'varchar', length: 20, name: 'auth_provider', default: 'local' })
-  authProvider: 'local' | 'google';
+  @Column({ type: 'varchar', length: 20, default: 'local' })
+  auth_provider: 'local' | 'google';
 
   // ID tu nha cung cap (vd: Google sub/id). Chi co khi auth_provider != local.
+  @Index()
   @Column({ type: 'varchar', length: 255, name: 'provider_id', nullable: true })
   providerId: string | null;
 

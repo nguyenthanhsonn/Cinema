@@ -31,17 +31,27 @@ export class Movie extends TimestampedEntity {
   @Column({ type: 'varchar', length: 160, nullable: true })
   director: string | null;
 
-  @Column({ type: 'date', nullable: true })
-  start_date: string | null;
+  @Column({ nullable: true })
+  start_date: Date
 
-  @Column({ type: 'date', nullable: true })
-  end_date: string | null;
+  @Column({ nullable: true })
+  end_date: Date
 
   @Column({ type: 'enum', enum: MovieAgeRating, nullable: true })
   age_rating: MovieAgeRating | null;
 
-  @Column({ type: 'decimal', precision: 3, scale: 1, nullable: true })
-  audience_score: string | null;
+  // điểm đánh giá của khán giả
+  @Column({
+    type: 'decimal',
+    precision: 3,
+    scale: 1,
+    nullable: true,
+    transformer: {
+      to: (val: number) => val,
+      from: (val: string) => (val ? parseFloat(val) : null),
+    },
+  })
+  audience_score: number | null;
 
   @Column({
     type: 'enum',

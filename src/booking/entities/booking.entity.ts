@@ -66,7 +66,7 @@ export class Booking extends TimestampedEntity {
   })
   @JoinColumn({ name: 'cinema_id' })
   cinema: Cinema;
-
+  
   @Column({ type: 'varchar', length: 160 })
   customer_name: string;
 
