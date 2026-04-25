@@ -115,7 +115,7 @@ export class AuthService {
         phone: register.phone,
         password_hash: hashPassword,
         // Tai khoan dang ky bang email/password la local
-        authProvider: 'local',
+        auth_provider: 'local',
         providerId: null,
         role: UserRole.CUSTOMER,
         status: UserStatus.ACTIVE,
@@ -151,7 +151,7 @@ export class AuthService {
     const user = await this.userService.findUserByEmail(login.email);
     if (!user) throw new HttpException('Email không tồn tại', HttpStatus.UNAUTHORIZED);
     // Neu tai khoan la Google/OAuth thi KHONG cho login bang mat khau.
-    if (user.authProvider !== 'local' || !user.password_hash) {
+    if (user.auth_provider !== 'local' || !user.password_hash) {
       throw new HttpException(
         'Tài khoản này đăng nhập bằng Google, vui lòng dùng Google Sign-In',
         HttpStatus.UNAUTHORIZED,
@@ -218,7 +218,7 @@ export class AuthService {
             full_name: googleUser.full_name,
             phone: null,
             avatar_url: googleUser.avatar_url,
-            authProvider: 'google',
+            auth_provider: 'google',
             providerId: googleUser.provider_id ?? null,
             password_hash: '',
             role: UserRole.CUSTOMER,
@@ -338,6 +338,10 @@ export class AuthService {
   async changePassword(changePassword: ChangePasswordDto, userId: string): Promise<ChangePasswordResDto> {
     const user = await this.userService.findUserById(userId);
     if (!user) throw new HttpException('Tài khoản không tồn tại', HttpStatus.BAD_REQUEST);
+
+    if (!user.password_hash) {
+      throw new HttpException('Tài khoản này không dùng mật khẩu', HttpStatus.BAD_REQUEST);
+    }
 
     const checkPassword = await bcrypt.compare(changePassword.old_password, user.password_hash);
     if (!checkPassword) throw new HttpException('Mật khẩu cũ không đúng', HttpStatus.BAD_REQUEST);

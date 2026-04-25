@@ -81,7 +81,7 @@ export class UserService {
         customer_profile: {
           membership_level: MembershipLevel.STANDARD,
           points: customerProfile?.points,
-          total_spent: customerProfile?.total_spent,
+          total_spent: customerProfile?.total_spent?.toString(),
           birth_date: customerProfile?.birth_date,
           gender: customerProfile?.gender,
         }
