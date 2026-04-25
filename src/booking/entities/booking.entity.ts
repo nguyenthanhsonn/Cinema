@@ -11,7 +11,6 @@ import {
 import { TimestampedEntity } from '../../common/entities/timestamped.entity';
 import { Cinema } from '../../cinema/entities/cinema.entity';
 import { Room } from '../../cinema/entities/room.entity';
-import { Movie } from '../../movie/entities/movie.entity';
 import { Notification } from '../../notification/entities/notification.entity';
 import { Payment } from '../../payment/entities/payment.entity';
 import { Showtime } from '../../showtime/entities/showtime.entity';
@@ -68,16 +67,6 @@ export class Booking extends TimestampedEntity {
   @JoinColumn({ name: 'cinema_id' })
   cinema: Cinema;
 
-  @Index()
-  @Column({ type: 'uuid' })
-  movie_id: string;
-
-  @ManyToOne(() => Movie, (movie) => movie.bookings, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'movie_id' })
-  movie: Movie;
-
   @Column({ type: 'varchar', length: 160 })
   customer_name: string;
 
@@ -94,8 +83,17 @@ export class Booking extends TimestampedEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   qr_code_url: string | null;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: '0' })
-  total_price: string;
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: '0',
+    transformer: {
+      to: (val: number) => val,
+      from: (val: string) => parseFloat(val),
+    },
+  })
+  total_price: number;
 
   @Column({
     type: 'enum',

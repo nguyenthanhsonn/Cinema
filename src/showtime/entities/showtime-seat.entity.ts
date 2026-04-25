@@ -21,6 +21,7 @@ export class ShowtimeSeat extends TimestampedEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column({ type: 'uuid' })
   showtime_id: string;
 
@@ -40,8 +41,16 @@ export class ShowtimeSeat extends TimestampedEntity {
   @JoinColumn({ name: 'seat_id' })
   seat: Seat;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
-  price: string;
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: {
+      to: (val: number) => val,
+      from: (val: string) => parseFloat(val),
+    },
+  })
+  price: number;
 
   @Column({
     type: 'enum',
