@@ -16,8 +16,16 @@ export class Product extends TimestampedEntity {
   @Column({ type: 'enum', enum: ProductCategory })
   category: ProductCategory;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
-  price: string;
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: {
+      to: (val: number) => val,
+      from: (val: string) => parseFloat(val),
+    },
+  })
+  price: number;
 
   @Column({ type: 'int', default: 0 })
   stock: number;

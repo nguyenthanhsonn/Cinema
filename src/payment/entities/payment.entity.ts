@@ -36,8 +36,16 @@ export class Payment extends CreatedAtEntity {
   @Column({ type: 'varchar', length: 100, nullable: true })
   transaction_id: string | null;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
-  amount: string;
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: {
+      to: (val: number) => val,
+      from: (val: string) => parseFloat(val),
+    },
+  })
+  amount: number;
 
   @Index()
   @Column({
