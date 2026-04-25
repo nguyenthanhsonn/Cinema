@@ -1,4 +1,4 @@
-import { IsDate, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsArray, IsDate, IsDateString, IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 export class CreateMovieDto {
     @IsString()
@@ -13,7 +13,8 @@ export class CreateMovieDto {
     @IsNotEmpty()
     duration_minutes: number;
 
-    @IsString()
+    @IsArray()
+    @IsString({each: true})
     @IsNotEmpty()
     genre: string[]
 
@@ -37,15 +38,16 @@ export class CreateMovieDto {
     @IsNotEmpty()
     director: string
 
-    @IsString()
+    @IsArray()
+    @IsString({each: true})
     @IsNotEmpty()
     actor: string[]
 
-    @IsDate()
+    @IsDateString()
     @IsNotEmpty()
     start_date: Date;
 
-    @IsDate()
+    @IsDateString()
     @IsNotEmpty()
     end_date: Date
     
