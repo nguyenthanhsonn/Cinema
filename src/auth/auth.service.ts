@@ -156,7 +156,7 @@ export class AuthService {
     const user = await this.userService.findUserByEmail(login.email);
     if (!user) throw new UnauthorizedException('Email không tồn tại');
     // Neu tai khoan la Google/OAuth thi KHONG cho login bang mat khau.
-    if (user.authProvider !== 'local' || !user.password_hash) {
+    if (user.auth_provider !== 'local' || !user.password_hash) {
       throw new UnauthorizedException(
         'Tài khoản này đăng nhập bằng Google, vui lòng dùng Google Sign-In',
       );
