@@ -1,6 +1,5 @@
 import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { TimestampedEntity } from '../../common/entities/timestamped.entity';
-import { Booking } from '../../booking/entities/booking.entity';
 import { Showtime } from '../../showtime/entities/showtime.entity';
 import { MovieAgeRating, MovieStatus } from '../enums/movie.enum';
 import { MovieCast } from './movie-cast.entity';
@@ -63,7 +62,4 @@ export class Movie extends TimestampedEntity {
 
   @OneToMany(() => Showtime, (showtime) => showtime.movie)
   showtimes: Showtime[];
-
-  @OneToMany(() => Booking, (booking) => booking.movie)
-  bookings: Booking[];
 }
