@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  PrimaryColumn,
-} from 'typeorm';
+import { Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Actor } from './actor.entity';
 import { Movie } from './movie.entity';
 import { TimestampedEntity } from '../../common/entities/timestamped.entity';
