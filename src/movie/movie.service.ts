@@ -96,7 +96,6 @@ export class MovieService {
             status: dto.status as MovieStatus,
           }),
         );
-
         const genres =
           genreNames.length > 0
             ? await genreRepository.find({
@@ -110,7 +109,6 @@ export class MovieService {
 
         if (missingGenres.length > 0) {
           throw new HttpException(`Không tìm thấy thể loại: ${missingGenres.join(', ')}`, 400);
-        }
 
         if (genres.length > 0) {
           await movieGenreRepository.insert(

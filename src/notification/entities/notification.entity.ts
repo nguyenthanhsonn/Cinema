@@ -12,6 +12,7 @@ import { NotificationType } from '../enums/notification.enum';
 import { Booking } from '../../booking/entities/booking.entity';
 
 @Entity('notifications')
+@Index(['user_id', 'is_read'])
 export class Notification extends CreatedAtEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

@@ -16,3 +16,4 @@ export class DetailMovieResponseDto {
     actor: string[];
   };
 }
+

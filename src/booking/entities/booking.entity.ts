@@ -66,7 +66,7 @@ export class Booking extends TimestampedEntity {
   })
   @JoinColumn({ name: 'cinema_id' })
   cinema: Cinema;
-
+  
   @Column({ type: 'varchar', length: 160 })
   customer_name: string;
 
@@ -83,8 +83,17 @@ export class Booking extends TimestampedEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   qr_code_url: string | null;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: '0' })
-  total_price: string;
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: '0',
+    transformer: {
+      to: (val: number) => val,
+      from: (val: string) => parseFloat(val),
+    },
+  })
+  total_price: number;
 
   @Column({
     type: 'enum',
