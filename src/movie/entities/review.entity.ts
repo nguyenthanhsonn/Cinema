@@ -1,16 +1,11 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique, } from 'typeorm';
 import { CreatedAtEntity } from '../../common/entities/created-at.entity';
 import { User } from '../../user/entities/user.entity';
 import { Movie } from './movie.entity';
+import { Max, Min } from 'class-validator';
 
 @Entity('reviews')
+
 export class Review extends CreatedAtEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -34,6 +29,8 @@ export class Review extends CreatedAtEntity {
   movie: Movie;
 
   @Column({ type: 'int' })
+  @Min(1)
+  @Max(10)
   rating: number;
 
   @Column({ type: 'text', nullable: true })

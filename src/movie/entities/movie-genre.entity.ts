@@ -1,9 +1,10 @@
 import { Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Genre } from './genre.entity';
 import { Movie } from './movie.entity';
+import { TimestampedEntity } from 'src/common/entities/timestamped.entity';
 
 @Entity('movie_genres')
-export class MovieGenre {
+export class MovieGenre extends TimestampedEntity {
   @PrimaryColumn('uuid')
   movie_id: string;
 
