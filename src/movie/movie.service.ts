@@ -22,7 +22,7 @@ export class MovieService {
     @InjectRepository(Actor)
     private readonly actorRepository: Repository<Actor>,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   private findMovieByTitle(title: string): Promise<Movie[]> {
     return this.movieRepository.find({ where: { title } });
@@ -82,11 +82,6 @@ export class MovieService {
         const movieGenreRepository = manager.getRepository(MovieGenre);
         const movieCastRepository = manager.getRepository(MovieCast);
 
-        const movie = (await manager.save(
-          Movie,
-          {
-
-
         const movie = await movieRepository.save(
           movieRepository.create({
             title,
@@ -95,13 +90,6 @@ export class MovieService {
             poster_url: dto.poster_url,
             trailer_url: dto.trailer_url,
             director: dto.director,
-            start_date: dto.start_date as unknown as Movie['start_date'],
-            end_date: dto.end_date as unknown as Movie['end_date'],
-            age_rating: dto.age_rating as Movie['age_rating'],
-            status: dto.status as MovieStatus,
-          } as Partial<Movie>,
-        )) as Movie;
-
             start_date: dto.start_date,
             end_date: dto.end_date,
             age_rating: dto.age_rating as Movie['age_rating'],
@@ -111,8 +99,8 @@ export class MovieService {
         const genres =
           genreNames.length > 0
             ? await genreRepository.find({
-                where: { name: In(genreNames) },
-              })
+              where: { name: In(genreNames) },
+            })
             : [];
 
         const missingGenres = genreNames.filter(
@@ -121,13 +109,6 @@ export class MovieService {
 
         if (missingGenres.length > 0) {
           throw new HttpException(`Không tìm thấy thể loại: ${missingGenres.join(', ')}`, 400);
-
-
-          throw new HttpException(
-            `Không tìm thấy thể loại: ${missingGenres.join(', ')}`,
-            400,
-          );
-        }
 
         if (genres.length > 0) {
           await movieGenreRepository.insert(
@@ -141,8 +122,8 @@ export class MovieService {
         const existingActors =
           actorNames.length > 0
             ? await actorRepository.find({
-                where: { name: In(actorNames) },
-              })
+              where: { name: In(actorNames) },
+            })
             : [];
 
         const missingActorNames = actorNames.filter(
@@ -160,8 +141,8 @@ export class MovieService {
         const actors =
           actorNames.length > 0
             ? await actorRepository.find({
-                where: { name: In(actorNames) },
-              })
+              where: { name: In(actorNames) },
+            })
             : [];
 
         if (actors.length > 0) {
