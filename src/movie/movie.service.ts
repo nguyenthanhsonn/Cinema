@@ -108,7 +108,7 @@ export class MovieService {
         );
 
         if (missingGenres.length > 0) {
-          throw new HttpException(`Không tìm thấy thể loại: ${missingGenres.join(', ')}`, 400);
+          throw new HttpException(`Không tìm thấy thể loại: ${missingGenres.join(', ')}`, 400)};
 
         if (genres.length > 0) {
           await movieGenreRepository.insert(
