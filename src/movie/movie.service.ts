@@ -22,7 +22,7 @@ export class MovieService {
     @InjectRepository(Actor)
     private readonly actorRepository: Repository<Actor>,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   private findMovieByTitle(title: string): Promise<Movie[]> {
     return this.movieRepository.find({ where: { title } });
@@ -100,8 +100,8 @@ export class MovieService {
         const genres =
           genreNames.length > 0
             ? await genreRepository.find({
-                where: { name: In(genreNames) },
-              })
+              where: { name: In(genreNames) },
+            })
             : [];
 
         const missingGenres = genreNames.filter(
@@ -124,8 +124,8 @@ export class MovieService {
         const existingActors =
           actorNames.length > 0
             ? await actorRepository.find({
-                where: { name: In(actorNames) },
-              })
+              where: { name: In(actorNames) },
+            })
             : [];
 
         const missingActorNames = actorNames.filter(
@@ -143,8 +143,8 @@ export class MovieService {
         const actors =
           actorNames.length > 0
             ? await actorRepository.find({
-                where: { name: In(actorNames) },
-              })
+              where: { name: In(actorNames) },
+            })
             : [];
 
         if (actors.length > 0) {
