@@ -1,24 +1,5 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Injectable,
-
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
-import { UserRole } from 'src/user/enums/user-role.enum';
-
-type AuthenticatedRequest = {
-  user?: {
-    role?: UserRole;
-  };
-};
-
-  UnauthorizedException,
-} from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { Request } from 'express';
 import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/user/enums/user-role.enum';
 
@@ -28,28 +9,6 @@ export class RoleGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-
-    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-
-    if (!requiredRoles) {
-      return true;
-    }
-
-    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    const userRole = request.user?.role;
-
-    if (!userRole) {
-      throw new ForbiddenException('User does not have any roles or is not authenticated');
-    }
-
-    const hasRole = requiredRoles.includes(userRole);
-
-    if (!hasRole) {
-      throw new ForbiddenException('User does not have the required permissions');
-=======
     const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
@@ -67,8 +26,8 @@ export class RoleGuard implements CanActivate {
 
     // RoleGuard giả định AuthGuard đã chạy trước và gắn payload vào request.user.
     // Nếu chưa có user thì trả 401 thay vì 403 để phân biệt rõ chưa đăng nhập và sai quyền.
-    if(!request.user?.role){
-      throw new ForbiddenException('User role is missing')
+    if (!request.user || !request.user.role) {
+      throw new UnauthorizedException('User role is missing');
     }
 
     const hasRequiredRole = requiredRoles.includes(request.user.role);
