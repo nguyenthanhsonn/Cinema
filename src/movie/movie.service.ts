@@ -38,11 +38,12 @@ export class MovieService {
     return [...new Set(names.map((name) => name?.trim()).filter(Boolean))];
   }
 
+  // lấy thể loại phim
   async getAllGenre(): Promise<Genre[]> {
     return this.genreRepository.find();
   }
 
-  // Lấy danh sách phim đang chiếu
+  // lấy phim đang chiếu
   async getShowingMovies(): Promise<GetShowingMoviesResponseDto> {
     const movies = await this.movieRepository.find({
       where: { status: MovieStatus.NOW_SHOWING },
@@ -68,15 +69,17 @@ export class MovieService {
     };
   }
 
-  async getAllMovies(): Promise<GetShowingMoviesResponseDto> {
+  // phim sắp chiếu
+  async getComingSoonMovies(): Promise<GetShowingMoviesResponseDto> {
     const movies = await this.movieRepository.find({
+      where: { status: MovieStatus.COMING_SOON },
       relations: ['movie_genres', 'movie_genres.genre'],
     });
 
     return {
       success: true,
       data: {
-        message: 'Lấy danh sách phim thành công',
+        message: 'Lấy phim sắp chiếu thành công',
         movies: movies.map((movie) => ({
           id: movie.id,
           title: movie.title,
@@ -92,7 +95,7 @@ export class MovieService {
     };
   }
 
-  // Tạo phim
+  // tạo phim
   async createFilm(dto: CreateMovieDto): Promise<CreateMovieResponseDto> {
     try {
       const title = dto.title.trim();
@@ -222,7 +225,7 @@ export class MovieService {
     }
   }
 
-  // Lấy chi tiết phim
+  // lấy chi tiết phim
   async getMovieById(id: string): Promise<DetailMovieResponseDto> {
     const movie = await this.movieRepository.findOne({
       where: { id },
