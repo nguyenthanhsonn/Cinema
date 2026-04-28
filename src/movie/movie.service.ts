@@ -24,10 +24,12 @@ export class MovieService {
     private readonly dataSource: DataSource,
   ) { }
 
+  // Tìm phim theo tên
   private findMovieByTitle(title: string): Promise<Movie[]> {
     return this.movieRepository.find({ where: { title } });
   }
 
+  // Xử lý tên
   private normalizeNames(names: string[] | undefined): string[] {
     if (!Array.isArray(names)) {
       return [];
@@ -40,6 +42,7 @@ export class MovieService {
     return this.genreRepository.find();
   }
 
+  // Lấy danh sách phim đang chiếu
   async getShowingMovies(): Promise<GetShowingMoviesResponseDto> {
     const movies = await this.movieRepository.find({
       where: { status: MovieStatus.NOW_SHOWING },
@@ -55,15 +58,41 @@ export class MovieService {
           title: movie.title,
           duration_minutes: movie.duration_minutes,
           genre: movie.movie_genres?.map((movieGenre) => movieGenre.genre?.name) || [],
-          status: movie.status as string,
-          age_rating: movie.age_rating ? (movie.age_rating as string) : 'P',
+          status: movie.status,
+          age_rating: movie.age_rating ?? null,
           poster_url: movie.poster_url || '',
-          start_date: movie.start_date ? new Date(movie.start_date) : new Date(),
+          trailer_url: movie.trailer_url || '',
+          start_date: movie.start_date ? new Date(movie.start_date) : null,
         })),
       },
     };
   }
 
+  async getAllMovies(): Promise<GetShowingMoviesResponseDto> {
+    const movies = await this.movieRepository.find({
+      relations: ['movie_genres', 'movie_genres.genre'],
+    });
+
+    return {
+      success: true,
+      data: {
+        message: 'Lấy danh sách phim thành công',
+        movies: movies.map((movie) => ({
+          id: movie.id,
+          title: movie.title,
+          duration_minutes: movie.duration_minutes,
+          genre: movie.movie_genres?.map((movieGenre) => movieGenre.genre?.name) || [],
+          status: movie.status,
+          age_rating: movie.age_rating ?? null,
+          poster_url: movie.poster_url || '',
+          trailer_url: movie.trailer_url || '',
+          start_date: movie.start_date ? new Date(movie.start_date) : null,
+        })),
+      },
+    };
+  }
+
+  // Tạo phim
   async createFilm(dto: CreateMovieDto): Promise<CreateMovieResponseDto> {
     try {
       const title = dto.title.trim();
@@ -108,7 +137,9 @@ export class MovieService {
         );
 
         if (missingGenres.length > 0) {
-          throw new HttpException(`Không tìm thấy thể loại: ${missingGenres.join(', ')}`, 400)};
+
+          throw new HttpException(`Không tìm thấy thể loại: ${missingGenres.join(', ')}`, 400);
+        }
 
         if (genres.length > 0) {
           await movieGenreRepository.insert(
@@ -191,6 +222,7 @@ export class MovieService {
     }
   }
 
+  // Lấy chi tiết phim
   async getMovieById(id: string): Promise<DetailMovieResponseDto> {
     const movie = await this.movieRepository.findOne({
       where: { id },

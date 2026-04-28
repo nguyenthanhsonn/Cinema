@@ -1,7 +1,7 @@
-import { Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Genre } from './genre.entity';
 import { Movie } from './movie.entity';
-import { TimestampedEntity } from 'src/common/entities/timestamped.entity';
+import { TimestampedEntity } from '../../common/entities/timestamped.entity';
 
 @Entity('movie_genres')
 export class MovieGenre extends TimestampedEntity {

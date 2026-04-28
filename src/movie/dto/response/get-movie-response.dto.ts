@@ -1,3 +1,5 @@
+import { MovieAgeRating, MovieStatus } from "src/movie/enums/movie.enum";
+
 export class GetShowingMoviesResponseDto {
     success: boolean;
     data: {
@@ -7,10 +9,11 @@ export class GetShowingMoviesResponseDto {
             title: string; // tiêu đề phim
             duration_minutes: number; // thời lượng
             genre: string[]; // thể loại
-            status: string; // trạng thái
-            age_rating: string; // độ tuổi
+            status: MovieStatus; // trạng thái
+            age_rating: MovieAgeRating | null; // độ tuổi
             poster_url: string; // ảnh
-            start_date: Date; // ngày chiếu
+            trailer_url: string | null; // video
+            start_date: Date | null; // ngày chiếu
         }[];
     }
 }

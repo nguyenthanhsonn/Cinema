@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { CreateShowtimeDto } from './dto/create-showtime.dto';
 import { UpdateShowtimeDto } from './dto/update-showtime.dto';
 import { ShowtimeService } from './showtime.service';
@@ -18,17 +18,17 @@ export class ShowtimeController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.showtimeService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateShowtimeDto: UpdateShowtimeDto) {
+  update(@Param('id', new ParseUUIDPipe()) id: string, @Body() updateShowtimeDto: UpdateShowtimeDto) {
     return this.showtimeService.update(id, updateShowtimeDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.showtimeService.remove(id);
   }
 }

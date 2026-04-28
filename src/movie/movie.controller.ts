@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { CreateMovieDto } from './dto/resquest/create-movie.dto';
 // import { UpdateMovieDto } from './dto/update-movie.dto';
 import { MovieService } from './movie.service';
@@ -17,6 +17,11 @@ export class MovieController {
   async createFilm(@Body() dto: CreateMovieDto){
     return this.movieService.createFilm(dto);
   }
+
+  @Get()
+  async getMovies() {
+    return this.movieService.getAllMovies();
+  }
   
   @Get('genre/all')
   async getAllGenre() {
@@ -28,8 +33,11 @@ export class MovieController {
     return this.movieService.getShowingMovies();
   }
 
+
+  
+
   @Get(':id')
-  async detailMovie(@Param('id') id: string){
+  async detailMovie(@Param('id', new ParseUUIDPipe()) id: string){
     return this.movieService.getMovieById(id);
   }
 }
