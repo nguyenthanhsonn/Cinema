@@ -1,16 +1,20 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
-import { CreateMovieDto } from './dto/resquest/create-movie.dto';
-import { DetailMovieResponseDto } from './dto/resquest/detail-movie-res.dto';
+import { CreateMovieDto } from './dto/request/create-movie.dto';
+import { CreateReviewDto} from './dto/request/create-review.dto';
+import { DetailMovieResponseDto } from './dto/request/detail-movie-res.dto';
 import { CreateMovieResponseDto } from './dto/response/create-movie-response.dto';
 import { GetShowingMoviesResponseDto } from './dto/response/get-movie-response.dto';
+import { GetMovieReviewsResponseDto } from './dto/response/get-review-movie.dto';
+import { CreateReviewResponseDto } from './dto/response/create-review-response.dto';
 import { MovieStatus } from './enums/movie.enum';
 import { Actor } from './entities/actor.entity';
 import { Genre } from './entities/genre.entity';
 import { MovieCast } from './entities/movie-cast.entity';
 import { MovieGenre } from './entities/movie-genre.entity';
 import { Movie } from './entities/movie.entity';
+import { Review } from './entities/review.entity';
 
 @Injectable()
 export class MovieService {
@@ -21,6 +25,8 @@ export class MovieService {
     private readonly genreRepository: Repository<Genre>,
     @InjectRepository(Actor)
     private readonly actorRepository: Repository<Actor>,
+    @InjectRepository(Review)
+    private readonly reviewRepository: Repository<Review>,
     private readonly dataSource: DataSource,
   ) { }
 
@@ -259,5 +265,51 @@ export class MovieService {
         actor: movie.movie_casts?.map((movieCast) => movieCast.actor?.name) || [],
       },
     };
+  }
+
+  // get xem review
+  async getMovieReviews(movieId: string): Promise<GetMovieReviewsResponseDto> {
+    const reviews = await this.reviewRepository.find({
+      where: { movie_id: movieId },
+      relations: ['user'],
+    });
+
+    return {
+      success: true,
+      data: {
+        message: 'Lấy review phim thành công',
+        reviews: reviews.map((review) => ({
+          id: review.id,
+          movie_id: review.movie_id,
+          user_id: review.user_id,
+          user: {
+            id: review.user.id,
+            full_name: review.user.full_name,
+            avatar_url: review.user.avatar_url,
+          },
+          rating: review.rating,
+          comment: review.comment,
+          created_at: review.created_at,
+        })),
+        total: reviews.length,
+      },
+    };
+  }
+
+  // create review
+  async createReview(dto: CreateReviewDto): Promise<CreateReviewResponseDto> {
+    try {
+      const review = await this.reviewRepository.save(dto);
+
+      return {
+        success: true,
+        data: {
+          message: 'Thêm review thành công',
+          review,
+        },
+      };
+    } catch (error) {
+      throw new HttpException(`Thêm review thất bại: ${error.message}`, 500);
+    }
   }
 }
