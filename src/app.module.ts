@@ -32,6 +32,8 @@ import googleOauthConfig from './config/google-oauth.config';
         DB_LOGGING: Joi.boolean().required(),
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRES_IN: Joi.string().required(),
+        JWT_ACCESS_EXPIRES_IN: Joi.string().optional(),
+        JWT_REFRESH_EXPIRES_IN: Joi.string().required(),
         JWT_ALGORITHM: Joi.string().default('HS256'),
         GOOGLE_CLIENT_ID: Joi.string().required(),
         GOOGLE_CLIENT_SECRET: Joi.string().required(),

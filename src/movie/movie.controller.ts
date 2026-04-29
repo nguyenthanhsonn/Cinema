@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
-import { CreateMovieDto } from './dto/resquest/create-movie.dto';
+import { CreateMovieDto } from './dto/request/create-movie.dto';
 // import { UpdateMovieDto } from './dto/update-movie.dto';
 import { MovieService } from './movie.service';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
@@ -14,7 +14,7 @@ export class MovieController {
   @Post()
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
-  async createFilm(@Body() dto: CreateMovieDto){
+  async createFilm(@Body() dto: CreateMovieDto) {
     return this.movieService.createFilm(dto);
   }
 
@@ -22,7 +22,7 @@ export class MovieController {
   async getMovies() {
     return this.movieService.getAllMovies();
   }
-  
+
   @Get('genre/all')
   async getAllGenre() {
     return this.movieService.getAllGenre();
@@ -34,10 +34,10 @@ export class MovieController {
   }
 
 
-  
+
 
   @Get(':id')
-  async detailMovie(@Param('id', new ParseUUIDPipe()) id: string){
+  async detailMovie(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.movieService.getMovieById(id);
   }
 }

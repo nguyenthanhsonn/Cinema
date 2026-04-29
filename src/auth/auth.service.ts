@@ -54,21 +54,37 @@ export class AuthService {
     return { token, hash, expiresAt };
   }
 
+  private getJwtExpiresIn(
+    key: string,
+    fallbackKey?: string,
+  ): JwtSignOptions['expiresIn'] {
+    const expiresIn =
+      this.configService.get<string>(key) ??
+      (fallbackKey ? this.configService.get<string>(fallbackKey) : undefined);
+
+    if (!expiresIn) {
+      throw new InternalServerErrorException(`${key} is not configured`);
+    }
+
+    return expiresIn as JwtSignOptions['expiresIn'];
+  }
+
   // generate access_token va refresh_token
   private async generateToken(payload: { id: string, email: string, role: UserRole }) {
     const access_token = await this.jwtService.signAsync(payload, {
       secret: this.configService.getOrThrow<string>('JWT_SECRET'),
-      expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN') as JwtSignOptions['expiresIn']
+      expiresIn: this.getJwtExpiresIn('JWT_ACCESS_EXPIRES_IN', 'JWT_EXPIRES_IN'),
     });
     // secret dùng để sign refresh_token
     const refresh_token = await this.jwtService.signAsync(payload,
       {
         secret: this.configService.getOrThrow<string>('JWT_SECRET'),
-        expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN') as JwtSignOptions['expiresIn']
+        expiresIn: this.getJwtExpiresIn('JWT_REFRESH_EXPIRES_IN'),
       }
     );
     // Lưu refresh token vào database
-    await this.userService.updateRefreshToken(payload.email, refresh_token);
+    const refreshTokenHash = crypto.createHash('sha256').update(refresh_token).digest('hex');
+    await this.userService.updateRefreshToken(payload.email, refreshTokenHash);
     return { access_token, refresh_token };
   }
 

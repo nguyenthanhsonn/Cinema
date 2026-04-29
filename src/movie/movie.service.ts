@@ -1,8 +1,8 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
-import { CreateMovieDto } from './dto/resquest/create-movie.dto';
-import { DetailMovieResponseDto } from './dto/resquest/detail-movie-res.dto';
+import { CreateMovieDto } from './dto/request/create-movie.dto';
+import { DetailMovieResponseDto } from './dto/request/detail-movie-res.dto';
 import { CreateMovieResponseDto } from './dto/response/create-movie-response.dto';
 import { GetShowingMoviesResponseDto } from './dto/response/get-movie-response.dto';
 import { MovieStatus } from './enums/movie.enum';
