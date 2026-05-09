@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -16,6 +17,7 @@ import { UserModule } from './user/user.module';
 import { MailModule } from './mail/email.module';
 import * as Joi from 'joi'; // joi sử dụng để validate env
 import googleOauthConfig from './config/google-oauth.config';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 @Module({
   imports: [
@@ -60,6 +62,12 @@ import googleOauthConfig from './config/google-oauth.config';
     ProductModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule {}

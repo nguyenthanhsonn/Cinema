@@ -38,4 +38,23 @@ export class EmailService {
 
     return this.sendMail({ to, subject, html, text });
   }
+
+  async sendRegisterOtpMail(to: string, otpCode: string): Promise<void> {
+    const apiBaseUrl = process.env.API_URL ?? 'http://localhost:3000';
+    const resendOtpUrl = `${apiBaseUrl}/api/v1/auth/resend-otp`;
+    const subject = 'Cinema account verification code';
+    const text = `Mã xác thực của bạn là ${otpCode}. Mã này sẽ hết hạn trong 5 phút.`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>Xác thực tài khoản</h2>
+        <p>Sử dụng mã bên dưới để kích hoạt tài khoản Cinema của bạn:</p>
+        <p style="font-size: 28px; font-weight: 700; letter-spacing: 6px;">${otpCode}</p>
+        <p>Mã này sẽ hết hạn trong 5 phút.</p>
+        <p>Nếu bạn không tạo tài khoản này, bạn có thể bỏ qua email này.</p>
+        <p>Nếu OTP hết hạn, vui lòng yêu cầu mã mới tại: <a href="${resendOtpUrl}">${resendOtpUrl}</a></p>
+      </div>
+    `;
+
+    return this.sendMail({ to, subject, html, text });
+  }
 }

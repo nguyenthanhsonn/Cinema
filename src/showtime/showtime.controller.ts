@@ -1,34 +1,27 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
-import { CreateShowtimeDto } from './dto/create-showtime.dto';
-import { UpdateShowtimeDto } from './dto/update-showtime.dto';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { CreateShowtimeDto } from './dto/request/create-showtime.dto';
 import { ShowtimeService } from './showtime.service';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { RoleGuard } from 'src/auth/guards/role.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { UserRole } from 'src/user/enums/user-role.enum';
 
 @Controller('showtimes')
 export class ShowtimeController {
-  constructor(private readonly showtimeService: ShowtimeService) {}
+  constructor(private readonly showtimeService: ShowtimeService) { }
 
+  // Tạo xuất chiếu
   @Post()
-  create(@Body() createShowtimeDto: CreateShowtimeDto) {
-    return this.showtimeService.create(createShowtimeDto);
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
+  async createShowtime(@Body() dto: CreateShowtimeDto) {
+    return this.showtimeService.createShowtimne(dto);
   }
+  
 
-  @Get()
-  findAll() {
-    return this.showtimeService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.showtimeService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id', new ParseUUIDPipe()) id: string, @Body() updateShowtimeDto: UpdateShowtimeDto) {
-    return this.showtimeService.update(id, updateShowtimeDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.showtimeService.remove(id);
+  // Lấy danh sách định dạng xuất chiếu
+  @Get('formats')
+  async getFormatShowtime() {
+    return this.showtimeService.getFormatShowtime();
   }
 }

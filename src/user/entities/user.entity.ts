@@ -52,6 +52,12 @@ export class User extends TimestampedEntity {
   @Column({ type: 'varchar', name: 'refresh_token', nullable: true })
   refreshToken: string | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  otp_code: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  otp_expires_at: Date | null;
+
   @Column({ type: 'varchar', name: 'password_reset_token_hash', nullable: true })
   passwordResetTokenHash: string | null;
 

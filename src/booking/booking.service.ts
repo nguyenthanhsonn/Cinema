@@ -3,9 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
-import { BookingProduct } from './entities/booking-product.entity';
-import { BookingSeat } from './entities/booking-seat.entity';
-import { BookingStatusLog } from './entities/booking-status-log.entity';
 import { Booking } from './entities/booking.entity';
 
 @Injectable()

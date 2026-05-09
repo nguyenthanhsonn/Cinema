@@ -11,6 +11,8 @@ import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { ResendOtpDto } from './dto/resend-otp.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -19,6 +21,16 @@ export class AuthController {
   @Post('register')
   async register(@Body() body: CreateAuthDto): Promise<RegisterResponseDto> {
     return this.authService.register(body);
+  }
+
+  @Post('verify-otp')
+  async verifyOtp(@Body() body: VerifyOtpDto) {
+    return this.authService.verifyRegisterOtp(body);
+  }
+
+  @Post('resend-otp')
+  async resendOtp(@Body() body: ResendOtpDto) {
+    return this.authService.resendOtp(body);
   }
 
   @Post('login')

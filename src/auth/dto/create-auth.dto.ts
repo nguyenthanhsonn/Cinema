@@ -1,4 +1,4 @@
-import { IsDateString, IsEmail, IsEnum, IsString, MinLength } from 'class-validator';
+import { IsDateString, IsEmail, IsEnum, IsPhoneNumber, IsString, MinLength } from 'class-validator';
 import { Gender } from 'src/user/enums/gender.enum';
 
 export class CreateAuthDto {
@@ -9,6 +9,7 @@ export class CreateAuthDto {
   email: string;
 
   @IsString()
+  @IsPhoneNumber('VN')
   phone: string;
 
   @IsString()
@@ -21,4 +22,3 @@ export class CreateAuthDto {
   @IsEnum(Gender)
   gender: Gender;
 }
-

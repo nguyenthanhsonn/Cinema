@@ -53,6 +53,17 @@ export class Movie extends TimestampedEntity {
   })
   audience_score: number | null;
 
+  @Column({ type: 'int', default: 5 })
+  admin_priority: number;
+
+  @Column({
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+  })
+  expected_hot_score: number | null;
+
   @Column({
     type: 'enum',
     enum: MovieStatus,

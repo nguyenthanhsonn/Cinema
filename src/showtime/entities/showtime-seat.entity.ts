@@ -1,13 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  Unique,
-} from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { TimestampedEntity } from '../../common/entities/timestamped.entity';
 import { User } from '../../user/entities/user.entity';
 import { BookingSeat } from '../../booking/entities/booking-seat.entity';

@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
 import { UserService } from 'src/user/user.service';
@@ -19,6 +19,8 @@ import { EmailService } from 'src/mail/email.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ChangePasswordResDto } from './dto/change-password-response.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { ResendOtpDto } from './dto/resend-otp.dto';
 
 
 type GoogleProfilePayload = {
@@ -41,6 +43,7 @@ export class AuthService {
   ) { }
   private readonly logger = new Logger(AuthService.name);
   private readonly passwordResetExpiresMs = 15 * 60 * 1000;
+  private readonly registerOtpExpiresMs = 5 * 60 * 1000;
 
   private buildPasswordResetToken(): {
     token: string;
@@ -52,6 +55,11 @@ export class AuthService {
     const expiresAt = new Date(Date.now() + this.passwordResetExpiresMs);
 
     return { token, hash, expiresAt };
+  }
+  
+  // generate otp
+  private generateOtp(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
   private getJwtExpiresIn(
@@ -117,6 +125,17 @@ export class AuthService {
     return 'customer';
   }
 
+  // xác thực tài khoản
+  private ensureActiveUser(user: User): void {
+    if (user.status === UserStatus.PENDING) {
+      throw new ForbiddenException('Tài khoản chưa được kích hoạt, vui lòng xác thực OTP');
+    }
+
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new ForbiddenException('Tài khoản đã bị khóa hoặc tạm ngưng');
+    }
+  }
+
   // Đăng ký
   async register(register: CreateAuthDto): Promise<RegisterResponseDto> {
     const existEmail = await this.userService.findUserByEmail(register.email);
@@ -126,8 +145,10 @@ export class AuthService {
     if (existPhone) throw new BadRequestException('Phone already exists');
 
     const hashPassword = bcrypt.hashSync(register.password, 10);
+    const otpCode = this.generateOtp();
+    const otpExpiresAt = new Date(Date.now() + this.registerOtpExpiresMs);
 
-    return this.dataSource.transaction(async (manager) => {
+    const savedUser = await this.dataSource.transaction(async (manager) => {
       // Bảng users chỉ giữ thông tin đăng nhập/chung của tài khoản.
       // Các field như birth_date, gender không thuộc users nên không save ở đây.
       const newUser = await manager.save(User, {
@@ -139,8 +160,10 @@ export class AuthService {
         authProvider: 'local',
         providerId: null,
         role: UserRole.CUSTOMER,
-        status: UserStatus.ACTIVE,
+        status: UserStatus.PENDING,
         refreshToken: null,
+        otp_code: otpCode,
+        otp_expires_at: otpExpiresAt,
       });
 
       // Hồ sơ customer được tách sang customer_profiles theo đúng schema DB.
@@ -151,26 +174,100 @@ export class AuthService {
         gender: register.gender,
       });
 
-      return {
-        success: true,
-        data: {
-          message: 'Register successful',
-          user: {
-            id: newUser.id,
-            email: newUser.email,
-            full_name: newUser.full_name,
-            role: this.mapRegisterRole(newUser.role),
-            status: newUser.status,
-          },
-        },
-      };
+      return newUser;
     });
+
+    await this.emailService.sendRegisterOtpMail(savedUser.email, otpCode);
+
+    return {
+      success: true,
+      data: {
+        message: 'Register successful. Please check your email for OTP verification.',
+      },
+    };
+  }
+
+  // xác thực OTP đăng ký
+  async verifyRegisterOtp(dto: VerifyOtpDto): Promise<RegisterResponseDto> {
+    const user = await this.userService.findUserByEmail(dto.email);
+    if (!user) throw new NotFoundException('Không tìm thấy tài khoản');
+
+    if (user.status === UserStatus.ACTIVE) {
+      throw new BadRequestException('Tài khoản đã được kích hoạt');
+    }
+
+    if (user.status !== UserStatus.PENDING) {
+      throw new BadRequestException('Tài khoản không ở trạng thái chờ kích hoạt');
+    }
+
+    if (!user.otp_code || !user.otp_expires_at) {
+      throw new BadRequestException('OTP không hợp lệ hoặc đã hết hạn');
+    }
+
+    if (user.otp_code !== dto.otp_code) {
+      throw new BadRequestException('OTP không đúng');
+    }
+
+    if (Date.now() > user.otp_expires_at.getTime()) {
+      user.otp_code = null;
+      user.otp_expires_at = null;
+      await this.userRepo.save(user);
+      throw new BadRequestException('OTP đã hết hạn');
+    }
+
+    user.status = UserStatus.ACTIVE;
+    user.otp_code = null;
+    user.otp_expires_at = null;
+    await this.userRepo.save(user);
+
+    return {
+      success: true,
+      data: {
+        message: 'Kích hoạt tài khoản thành công',
+        user: {
+          id: user.id,
+          email: user.email,
+          full_name: user.full_name,
+          role: this.mapRegisterRole(user.role),
+          status: user.status,
+        },
+      },
+    };
+  }
+
+  // resend otp
+  async resendOtp(dto: ResendOtpDto): Promise<RegisterResponseDto> {
+    const user = await this.userService.findUserByEmail(dto.email);
+    if (!user) throw new NotFoundException('Không tìm thấy tài khoản');
+
+    if (user.status === UserStatus.ACTIVE) {
+      throw new BadRequestException('Tài khoản đã được kích hoạt');
+    }
+
+    if (user.status !== UserStatus.PENDING) {
+      throw new BadRequestException('Tài khoản không ở trạng thái chờ kích hoạt');
+    }
+
+    const otpCode = this.generateOtp();
+    user.otp_code = otpCode;
+    user.otp_expires_at = new Date(Date.now() + this.registerOtpExpiresMs);
+    await this.userRepo.save(user);
+
+    await this.emailService.sendRegisterOtpMail(user.email, otpCode);
+
+    return {
+      success: true,
+      data: {
+        message: 'OTP has been resent. Please check your email.',
+      },
+    };
   }
 
   // Đăng nhập
   async login(login: LoginDto): Promise<LoginResponseDto> {
     const user = await this.userService.findUserByEmail(login.email);
     if (!user) throw new UnauthorizedException('Email không tồn tại');
+    this.ensureActiveUser(user);
     // Neu tai khoan la Google/OAuth thi KHONG cho login bang mat khau.
     if (user.auth_provider !== 'local' || !user.password_hash) {
       throw new UnauthorizedException(
@@ -229,6 +326,7 @@ export class AuthService {
 
       if (user) {
         this.logger.log(`[GoogleAuth] Existing user: ${user.email}`);
+        this.ensureActiveUser(user);
       }
 
       if (!user) {
@@ -330,10 +428,7 @@ export class AuthService {
         throw new HttpException('Token không hợp lệ hoặc đã hết hạn', HttpStatus.BAD_REQUEST);
       }
 
-      if (
-        !user.passwordResetTokenExpiresAt ||
-        Date.now() > user.passwordResetTokenExpiresAt.getTime()
-      ) {
+      if ( !user.passwordResetTokenExpiresAt || Date.now() > user.passwordResetTokenExpiresAt.getTime()) {
         // Nếu token đã hết hạn thì dọn sạch khỏi DB.
         user.passwordResetTokenHash = null;
         user.passwordResetTokenExpiresAt = null;
@@ -345,8 +440,8 @@ export class AuthService {
       user.password_hash = bcrypt.hashSync(resetPassword.new_password, 10);
       user.passwordResetTokenHash = null;
       user.passwordResetTokenExpiresAt = null;
+
       await this.userRepo.save(user);
-      throw new BadRequestException('Token không hợp lệ hoặc đã hết hạn');
 
       return 'Đặt lại mật khẩu thành công';
     } catch (error) {

@@ -1,4 +1,5 @@
-import { IsArray, IsDate, IsDateString, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { MovieAgeRating, MovieStatus } from "src/movie/enums/movie.enum";
 
 export class CreateMovieDto {
     @IsString()
@@ -18,13 +19,13 @@ export class CreateMovieDto {
     @IsNotEmpty()
     genre: string[]
 
-    @IsString()
+    @IsEnum(MovieStatus)
     @IsNotEmpty()
-    status: string
+    status: MovieStatus
 
-    @IsString()
+    @IsEnum(MovieAgeRating)
     @IsNotEmpty()
-    age_rating: string
+    age_rating: MovieAgeRating
 
     @IsString()
     @IsNotEmpty()
@@ -50,8 +51,4 @@ export class CreateMovieDto {
     @IsDateString()
     @IsNotEmpty()
     end_date: Date
-    
-    
-
-
 }

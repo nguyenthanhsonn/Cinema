@@ -4,7 +4,7 @@ export class RegisterResponseDto {
   success: boolean;
   data: {
     message: string;
-    user: {
+    user?: {
       id: string;
       email: string;
       full_name: string;

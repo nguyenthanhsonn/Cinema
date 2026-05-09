@@ -23,7 +23,7 @@ async function bootstrap() {
   app.setGlobalPrefix(apiPrefix);
   app.use(cookieParser());
   app.enableCors({
-    origin: ['http://172.25.19.111:3000', 'http://localhost:3000'],
+    origin: ['http://172.25.19.111:3000', 'http://localhost:3000', 'http://localhost:3003'],
     credentials: true,
   });
   app.useGlobalPipes(
@@ -33,6 +33,30 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(process.env.PORT ?? 5050);
+
+  const preferredPort = Number(process.env.PORT ?? 5050);
+  const maxPortAttempts = 20;
+
+  for (let offset = 0; offset < maxPortAttempts; offset++) {
+    const port = preferredPort + offset;
+    try {
+      await app.listen(port);
+      if (offset > 0) {
+        console.warn(
+          `Port ${preferredPort} is in use, server started on port ${port}.`,
+        );
+      }
+      break;
+    } catch (error) {
+      const isAddressInUse =
+        error instanceof Error &&
+        'code' in error &&
+        (error as NodeJS.ErrnoException).code === 'EADDRINUSE';
+
+      if (!isAddressInUse || offset === maxPortAttempts - 1) {
+        throw error;
+      }
+    }
+  }
 }
 bootstrap();
