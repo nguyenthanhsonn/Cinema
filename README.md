@@ -44,55 +44,198 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Run tests
+# 🎬 CINEPRO Backend API
 
-```bash
-# unit tests
-$ npm run test
+> A modern cinema booking backend system built with NestJS, PostgreSQL, PayOS and QR Ticket verification.
 
-# e2e tests
-$ npm run test:e2e
+---
 
-# test coverage
-$ npm run test:cov
-```
+# 🛠️ Tech Stack
+
+## Backend
+
+* NestJS
+* Node.js
+* TypeScript
+
+## Database
+
+* PostgreSQL
+* TypeORM
+
+## Authentication & Security
+
+* JWT Authentication
+* Google OAuth2 Login
+* Role-Based Access Control (RBAC)
+
+## Payment
+
+* PayOS Integration
+
+## Email & Notification
+
+* Nodemailer
+* QRCode Generator
+
+## Media & Storage
+
+* Cloudinary
 
 ## Deployment
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+* Docker
+* VPS Deployment
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# 🏗️ Architecture & Main Features
+
+## 🌟 Main Features
+
+### 👤 Authentication & Authorization
+
+* Register/Login with JWT
+* Google OAuth2 Login
+* Role-based permissions:
+
+  * ADMIN
+  * STAFF
+  * USER
+
+---
+
+### 🎥 Movie Management
+
+* Create / Update / Delete movies
+* Upload movie poster & trailer
+* Movie detail API
+* Weekly movie schedule
+
+---
+
+### 🕒 Showtime Management
+
+* Create showtime manually
+* Auto generate showtime schedule
+* Draft showtime workflow
+* Publish draft showtimes
+* Weekly showtime API for users
+
+---
+
+### 🪑 Seat Management
+
+* Auto generate room seats
+* VIP / STANDARD / COUPLE seats
+* Seat locking system
+* Seat release system
+
+---
+
+### 🎟️ Booking System
+
+* Create booking
+* Booking history
+* Cancel booking
+* Booking lookup by code
+
+Booking Flow:
+
+```text
+Select Showtime
+→ Lock Seats
+→ Create Booking (PENDING)
+→ Create Payment
+→ Payment Success
+→ Confirm Booking
+→ Generate Ticket
+→ Send Ticket Email
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+### 💳 Payment System
 
-Check out a few resources that may come in handy when working with NestJS:
+* PayOS Integration
+* MOMO / Banking / QR Payment
+* Payment webhook handling
+* Auto booking confirmation
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Payment Flow:
 
-## Support
+```text
+Create Booking
+→ Create PayOS Payment
+→ User Payment
+→ PayOS Webhook
+→ Booking PAID
+→ Seats SOLD
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+### 📧 E-Ticket System
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+* Generate ticket after payment
+* Generate QR Code ticket
+* Send ticket via email
+* Staff QR ticket verification
 
-## License
+Ticket Status:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+* VALID
+* USED
+* CANCELLED
+
+---
+
+# 🗂️ Folder Structure
+
+```bash
+src/
+│
+├── auth/           # Authentication & Authorization
+├── booking/        # Booking management
+├── cinema/         # Cinema management
+├── common/         # Shared utilities, constants, helpers
+├── config/         # App & environment configuration
+├── dashboard/      # Dashboard & statistics
+├── mail/           # Email service & templates
+├── migrations/     # Database migrations
+├── movie/          # Movie management
+├── notification/   # Notifications system
+├── payment/        # PayOS payment integration
+├── product/        # Products / combos / food
+├── seeds/          # Seed data
+├── showtime/       # Showtime & seat logic
+├── ticket/         # Ticket & QR verification
+├── user/           # User management
+│
+├── app.controller.ts
+├── app.module.ts
+├── app.service.ts
+└── main.ts
+```
+
+---
+
+# 🚀 Getting Started
+
+## Install dependencies
+
+```bash
+npm install
+```
+
+# 👨‍💻 Contributors
+
+* Nguyễn Sơn
+* CINEPRO Development Team
+
+---
+
+# 📄 License
+
+This project is licensed under the MIT License.
+

@@ -8,6 +8,7 @@ import { UserRole } from './enums/user-role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UpdateUserStatusDto } from './dto/request/update-user-status.dto';
 import { CreateStaffDto } from './dto/request/create-staff.dto';
+import { GoogleAuthGuard } from 'src/auth/guards/google-auth.guard';
 
 @Controller('users')
 @UseGuards(AuthGuard)
@@ -37,17 +38,21 @@ export class UserController {
         return this.userService.getAllStaff(query);
     }
 
+    // lấy thông tin cá nhân
     @Get('me')
+    @UseGuards(AuthGuard, GoogleAuthGuard)
     async getMe(@Req() req){
         return this.userService.getMe(req.user.id);
     }
     
+    // cập nhật thông tin cá nhân
     @Put('update/me')
     @UseGuards(AuthGuard)
     async updateProfile(@Req() req, @Body() body: UpdateProfileDto){
         return this.userService.updateProfile(req.user.id, body);
     }
 
+    // cập nhật trạng thái tài khoản
     @Patch(':id/status')
     @UseGuards(AuthGuard, RoleGuard)
     @Roles(UserRole.ADMIN)
@@ -55,6 +60,7 @@ export class UserController {
         return this.userService.updateStatus(id, body);
     }
 
+    // reset password cho nhân viên
     @Patch('staff/:id/reset-password')
     @UseGuards(AuthGuard, RoleGuard)
     @Roles(UserRole.ADMIN)
