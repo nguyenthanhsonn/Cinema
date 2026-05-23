@@ -233,9 +233,4 @@ npm install
 * Nguyễn Sơn
 * CINEPRO Development Team
 
----
-
-# 📄 License
-
-This project is licensed under the MIT License.
 
