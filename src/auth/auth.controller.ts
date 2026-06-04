@@ -47,18 +47,23 @@ export class AuthController {
   @Post('logout')
   async logout(
     @Req() req: Request & { user: { email: string } },
-    @Res() res: Response,
-  ): Promise<void> {
-    await this.authService.logout(req.user.email);
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<LogoutResponseDto> {
+    const logoutRes = await this.authService.logout(req.user.email);
 
     // Xoa cookie de FE khong con token cu
-    res.clearCookie('access_token', { path: '/' });
-    res.clearCookie('refresh_token', { path: '/' });
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieOptions = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' as const : 'lax' as const,
+      path: '/',
+    };
 
-    res.status(200).json({
-      success: true,
-      data: { message: 'Logout successful' },
-    });
+    res.clearCookie('access_token', cookieOptions);
+    res.clearCookie('refresh_token', cookieOptions);
+
+    return logoutRes;
   }
 
   @UseGuards(GoogleAuthGuard)
