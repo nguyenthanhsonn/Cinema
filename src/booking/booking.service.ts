@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { BookingDetailResponseDto } from './dto/response/booking-detail-response.dto';
+import { BookingResponseDto } from './dto/response/booking-detail-response.dto';
 import { Booking } from './entities/booking.entity';
 import { Showtime } from 'src/showtime/entities/showtime.entity';
 import { ShowtimeSeat } from 'src/showtime/entities/showtime-seat.entity';
@@ -18,6 +18,7 @@ import { Payment } from 'src/payment/entities/payment.entity';
 import { PaymentProvider, PaymentStatus } from 'src/payment/enums/payment.enum';
 import { PaymentService } from 'src/payment/payment.service';
 import { TicketService } from 'src/ticket/ticket.service';
+import { GetBookingResponseDto } from './dto/response/get-booking-res.dto';
 
 @Injectable()
 export class BookingService {
@@ -116,7 +117,7 @@ export class BookingService {
   }
 
   /** Map entity (đã load relations) → DTO chi tiết. */
-  private toBookingDetailDto(booking: Booking): BookingDetailResponseDto {
+  private toBookingDetailDto(booking: Booking): BookingResponseDto {
     const st = booking.showtime;
     const movie = st?.movie;
     if (!st || !movie) {
@@ -140,6 +141,8 @@ export class BookingService {
     return {
       id: booking.id,
       booking_code: booking.booking_code,
+      created_at: booking.created_at.toISOString(),
+      status: booking.status,
       movie: {
         id: movie.id,
         title: movie.title,
@@ -168,7 +171,7 @@ export class BookingService {
   }
 
   /** Chi tiết đặt vé: movie, showtime, seats, total_price, payment_status (chỉ chủ booking). */
-  async findOneForUser(userId: string | null, id: string): Promise<BookingDetailResponseDto> {
+  async findOneForUser(userId: string | null, id: string): Promise<BookingResponseDto> {
     if (!userId) {
       throw new BadRequestException('Yêu cầu đăng nhập');
     }
@@ -193,7 +196,7 @@ export class BookingService {
   }
 
   /** Tra cứu đặt vé theo mã vé (booking_code), không cần đăng nhập. */
-  async findByBookingCode(rawCode: string): Promise<BookingDetailResponseDto> {
+  async findByBookingCode(rawCode: string): Promise<BookingResponseDto> {
     const bookingCode = rawCode?.trim() ?? '';
     if (bookingCode.length < 1 || bookingCode.length > 30) {
       throw new BadRequestException('Mã vé không hợp lệ');
@@ -222,7 +225,7 @@ export class BookingService {
    * Xác nhận booking sau thanh toán thành công (internal / admin / staff).
    * Yêu cầu: booking PENDING và payment SUCCESS. Idempotent nếu booking đã PAID.
    */
-  async confirmAfterPayment(bookingId: string): Promise<BookingDetailResponseDto> {
+  async confirmAfterPayment(bookingId: string): Promise<BookingResponseDto> {
     await this.dataSource.transaction(async (manager) => {
       const booking = await manager.findOne(Booking, {
         where: { id: bookingId },
@@ -385,5 +388,36 @@ export class BookingService {
     await this.ticketService.cancelTicketsForBooking(id);
 
     return result;
+  }
+
+  // Lấy danh sách đặt vé
+  async getMyBookings(userId: string | null, page: number, limit: number): Promise<GetBookingResponseDto> {
+    if (!userId) {
+      throw new BadRequestException('Yêu cầu đăng nhập');
+    }
+
+    const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+    const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.min(Math.floor(limit), 50) : 10;
+
+    const bookings = await this.bookingRepository.find({
+      where: { user_id: userId },
+      relations: { showtime: { movie: true, cinema: true, room: true }, booking_seats: { seat: true }, payment: true },
+      take: safeLimit,
+      skip: (safePage - 1) * safeLimit,
+      order: { created_at: 'DESC' },
+    })
+
+    const total = await this.bookingRepository.count({ where: { user_id: userId } });
+
+    return {
+      success: true,
+      message: 'Lấy danh sách đặt vé thành công',
+      data: {
+        bookings: bookings.map((booking) => this.toBookingDetailDto(booking))
+      },
+      total,
+      page: safePage,
+      limit: safeLimit,
+    };
   }
 }

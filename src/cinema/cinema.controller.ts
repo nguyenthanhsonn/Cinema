@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { CinemaService } from './cinema.service';
 import { CreateRoomDto } from './dto/request/create-room.dto';
 import { UpdateRoomDto } from './dto/request/update-room.dto';
@@ -61,6 +61,14 @@ export class CinemaController {
     return this.cinemaService.getRoomSeats(roomId);
   }
 
+  /** Lấy chi tiết một phòng chiếu */
+  @Get('rooms/:id')
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
+  async getRoom(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.cinemaService.getRoom(id);
+  }
+
   // lấy tất cả các room đang active
   @Get('rooms-active')
   @UseGuards(AuthGuard, RoleGuard)
@@ -115,5 +123,12 @@ export class CinemaController {
   @Roles(UserRole.ADMIN)
   async updateSeat(@Param('id') id: string, @Body() dto: UpdateSeatDto) {
     return this.cinemaService.updateSeat(id, dto);
+  }
+
+  @Delete('rooms/:id')
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
+  async removeRoom(@Param('id') id: string) {
+    return this.cinemaService.removeRoom(id);
   }
 }

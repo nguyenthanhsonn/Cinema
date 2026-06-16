@@ -573,7 +573,7 @@ async handleCronSeatsCleanup() {
       movies: WeekMovieItem[];
     };
 
-    const weekStartDate = this.parseLocalDate(query.date);
+    const weekStartDate = this.getMonday(this.parseLocalDate(query.date));
     const weekEndDate = new Date(weekStartDate);
     weekEndDate.setDate(weekEndDate.getDate() + 6);
 

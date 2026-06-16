@@ -1,4 +1,5 @@
 import { PaymentStatus } from 'src/payment/enums/payment.enum';
+import { BookingStatus } from 'src/booking/enums/booking.enum';
 import { ScreeningFormat, ScheduleType, ShowtimeStatus } from 'src/showtime/enums/showtime.enum';
 
 export class BookingDetailMovieDto {
@@ -31,9 +32,11 @@ export class BookingDetailSeatDto {
   unit_price: number;
 }
 
-export class BookingDetailResponseDto {
+export class BookingResponseDto {
   id: string;
   booking_code: string;
+  created_at: string;
+  status: BookingStatus;
   movie: BookingDetailMovieDto;
   showtime: BookingDetailShowtimeDto;
   seats: BookingDetailSeatDto[];

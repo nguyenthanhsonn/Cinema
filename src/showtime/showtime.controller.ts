@@ -113,5 +113,11 @@ export class ShowtimeController {
   async getShowtimeByWeek(@Query() query: GetShowtimeByWeekDto) {
     return this.showtimeService.getShowtimeByWeek(query);
   }
+
+  // lấy lịch chiếu đã publish cho user
+  @Get('published')
+  async getPublishedShowtimes(@Query() query: GetShowtimeByWeekDto) {
+    return this.showtimeService.getShowtimeByWeek(query);
+  }
   
 }

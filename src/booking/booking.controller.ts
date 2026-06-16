@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Request } from 'express';
 import { BookingConfirmAccessGuard } from './guards/booking-confirm-access.guard';
@@ -21,6 +21,18 @@ export class BookingController {
   @Get('code/:bookingCode')
   findByCode(@Param('bookingCode') bookingCode: string) {
     return this.bookingService.findByBookingCode(bookingCode);
+  }
+
+  // Lấy danh sách đặt vé của tôi
+  @Get('me')
+  @UseGuards(AuthGuard)
+  async getMyBookings(
+    @Req() req: Request & { user?: { id?: string; sub?: string } },
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    const userId = req.user?.id ?? req.user?.sub ?? null;
+    return this.bookingService.getMyBookings(userId, Number(page), Number(limit));
   }
 
   // Lấy thông tin đặt vé

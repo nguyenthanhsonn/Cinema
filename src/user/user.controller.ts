@@ -8,7 +8,6 @@ import { UserRole } from './enums/user-role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UpdateUserStatusDto } from './dto/request/update-user-status.dto';
 import { CreateStaffDto } from './dto/request/create-staff.dto';
-import { GoogleAuthGuard } from 'src/auth/guards/google-auth.guard';
 
 @Controller('users')
 @UseGuards(AuthGuard)
@@ -40,7 +39,6 @@ export class UserController {
 
     // lấy thông tin cá nhân
     @Get('me')
-    @UseGuards(AuthGuard, GoogleAuthGuard)
     async getMe(@Req() req){
         return this.userService.getMe(req.user.id);
     }

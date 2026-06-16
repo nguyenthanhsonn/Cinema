@@ -1,6 +1,6 @@
-import { HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { CreateRoomDto } from './dto/request/create-room.dto';
 import { UpdateRoomDto } from './dto/request/update-room.dto';
 import { CinemaFeatureMap } from './entities/cinema-feature-map.entity';
@@ -16,6 +16,11 @@ import { GenerateSeatsDto } from './dto/request/generate-seats.dto';
 import { UpdateSeatDto } from './dto/request/update-seat.dto';
 import { GenerateSeatsResponseDto } from './dto/response/generate-seats-response.dto';
 import { BadRequestException } from '@nestjs/common';
+import { RoomResponseDto } from './dto/response/room-response.dto';
+import { RoomDetailDto } from './dto/response/room-detail.dto';
+import { Showtime } from 'src/showtime/entities/showtime.entity';
+import { ShowtimeStatus } from 'src/showtime/enums/showtime.enum';
+import { Booking } from 'src/booking/entities/booking.entity';
 
 @Injectable()
 export class CinemaService {
@@ -29,6 +34,10 @@ export class CinemaService {
     private readonly roomRepo: Repository<Room>,
     @InjectRepository(Seat)
     private readonly seatRepository: Repository<Seat>,
+    @InjectRepository(Showtime)
+    private readonly showtimeRepo: Repository<Showtime>,
+    @InjectRepository(Booking)
+    private readonly bookingRepository: Repository<Booking>,
   ) { }
 
   private findRoomById(id: string) : Promise<Room | null>{
@@ -46,6 +55,13 @@ export class CinemaService {
       status: room.status,
       created_at: room.created_at,
     }
+  }
+
+  private mapToRoomDetailDto(room: Room): RoomDetailDto {
+    return {
+      ...this.mapToRoomItemDto(room),
+      seats: (room.seats ?? []).map((seat) => this.mapToSeatItem(seat)),
+    };
   }
 
   /** Chuyển đổi từ Entity Seat sang DTO SeatItemDto */
@@ -131,7 +147,18 @@ export class CinemaService {
       if(!room){
         throw new NotFoundException('Không tìm thấy phòng');
       }
-      await this.roomRepo.update(id, {status: RoomStatus.INACTIVE});
+      const [showtimeCount, bookingCount] = await Promise.all([
+        this.showtimeRepo.count({ where: { room_id: id } }),
+        this.bookingRepository.count({ where: { room_id: id } }),
+      ]);
+
+      if (showtimeCount > 0 || bookingCount > 0) {
+        throw new BadRequestException(
+          'Phòng đã có lịch chiếu hoặc booking, không thể xóa. Hãy đổi trạng thái phòng sang inactive.',
+        );
+      }
+
+      await this.roomRepo.remove(room);
       return this.mapToRoomItemDto(room);
     } catch (error) {
       if(error instanceof HttpException){
@@ -191,6 +218,32 @@ export class CinemaService {
       data: {
         message: 'Lấy tất cả các phòng thành công',
         rooms: rooms.map((room) => this.mapToRoomItemDto(room)),
+      },
+    };
+  }
+
+  // lấy chi tiết một room
+  async getRoom(id: string): Promise<RoomResponseDto> {
+    const room = await this.roomRepo.findOne({
+      where: { id },
+      relations: { seats: true },
+      order: {
+        seats: {
+          seat_row: 'ASC',
+          seat_number: 'ASC',
+        },
+      },
+    });
+
+    if (!room) {
+      throw new NotFoundException('Không tìm thấy phòng');
+    }
+
+    return {
+      success: true,
+      data: {
+        message: 'Lấy thông tin phòng thành công',
+        room: this.mapToRoomDetailDto(room),
       },
     };
   }
@@ -329,5 +382,31 @@ export class CinemaService {
       default:
         return 0;
     }
+  }
+
+  async removeRoom(id: string): Promise<{ success: boolean; data: { message: string } }> {
+    const room = await this.roomRepo.findOne({where: {id: id}});
+
+    if(!room){
+      throw new NotFoundException("Không tìm thấy phòng chiếu");
+    }
+
+    // kiem tra con showtime chua dien ra
+    const hasActiveShowtime = await this.showtimeRepo.existsBy({
+      room_id: id,
+      start_time: MoreThan(new Date()),
+      status: ShowtimeStatus.ON_SALE,
+    });
+
+    if(hasActiveShowtime) throw new ConflictException(`Phòng này còn lịch chiếu, không thể xóa`);
+
+    await this.roomRepo.update(id, { status: RoomStatus.INACTIVE });
+    await this.seatRepository.update({ room_id: id }, { is_active: false });
+    return {
+      success: true,
+      data: {
+        message: 'Xóa phòng chiếu thành công',
+      },
+    };
   }
 }
