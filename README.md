@@ -1,52 +1,30 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# CINEPRO - Nền Tảng Đặt Vé Xem Phim Trực Tuyến
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+CINEPRO là một ứng dụng web hiện đại giúp người dùng dễ dàng theo dõi lịch chiếu, khám phá các bộ phim bom tấn mới nhất và thực hiện đặt vé xem phim trực tuyến một cách nhanh chóng, tiện lợi. Dự án sở hữu giao diện tối (Dark Mode) rực rỡ, tối ưu trải nghiệm điện ảnh cho người dùng.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📸 Giao diện dự án (Screenshots)
 
-## Project setup
+![alt text](image.png)
+*Giao diện trang chủ với Slider Banner hiển thị phim hot*
 
-```bash
-$ npm install
-```
+---
 
-## Compile and run the project
+### 🖥️ Giao diện người dùng (Frontend)
+*   **Hero Slider thông minh:** Banner trang chủ hiển thị các bộ phim đang chiếu nổi bật kèm hiệu ứng mượt mà, tích hợp bộ điều khiển Play/Pause/Next/Prev và hiển thị nhanh thông tin phim (Thời lượng, Điểm đánh giá, Ngày khởi chiếu).
+*   **Hệ thống phân loại phim trực quan:** Gắn nhãn phân loại phim rõ ràng (ví dụ: `ĐANG CHIẾU`, nhãn giới hạn độ tuổi `T16`).
+*   **Trải nghiệm người dùng mượt mà:** 
+    *   Nút bấm **MUA VÉ NGAY** nổi bật thúc đẩy hành động (Call-to-Action).
+    *   Xem trailer trực tiếp thông qua cửa sổ Modal (`XEM TRAILER`).
+    *   Tích hợp Live Chat hỗ trợ nhanh cho khách hàng (nút chat góc phải dưới màn hình).
+*   **Responsive Design:** Tối ưu hóa giao diện hiển thị đẹp mắt trên cả Máy tính, Máy tính bảng và Điện thoại di động.
 
-```bash
-# development
-$ npm run start
+### ⚙️ Tính năng hệ thống (System Features)
+*   **Hệ thống xác thực (Authentication):** Đăng nhập và quản lý tài khoản thành viên để tích điểm, xem lịch sử đặt vé.
+*   **Điều hướng thông minh:** Thanh điều hướng (Navbar) tinh gọn bao gồm Trang chủ, Phim, Lịch chiếu giúp người dùng tìm kiếm thông tin mong muốn chỉ với 1 cú click.
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-# 🎬 CINEPRO Backend API
-
-> A modern cinema booking backend system built with NestJS, PostgreSQL, PayOS and QR Ticket verification.
 
 ---
 
