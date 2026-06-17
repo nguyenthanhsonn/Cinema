@@ -67,104 +67,100 @@ CINEPRO là một ứng dụng web hiện đại giúp người dùng dễ dàng
 
 ---
 
-# 🏗️ Architecture & Main Features
+# 🏗️ Kiến Trúc & Các Tính Năng Chính (Architecture & Main Features)
 
-## 🌟 Main Features
+## 🌟 Các Tính Năng Đã Hoàn Thành (Completed Features)
 
-### 👤 Authentication & Authorization
-
-* Register/Login with JWT
-* Google OAuth2 Login
-* Role-based permissions:
-
-  * ADMIN
-  * STAFF
-  * USER
+### 👤 Xác Thực & Phân Quyền (Authentication & Authorization)
+* **Đăng ký & Đăng nhập:** Hệ thống đăng ký, đăng nhập bảo mật với JWT (JSON Web Token), tích hợp cơ chế Refresh Token để duy trì trạng thái đăng nhập tối ưu.
+* **Đăng nhập bên thứ ba:** Hỗ trợ đăng nhập nhanh chóng bằng tài khoản Google OAuth2.
+* **Phân quyền người dùng (Role-Based Access Control - RBAC):** Bảo mật hệ thống API phân cấp dựa trên vai trò:
+  * `ADMIN`: Quản trị viên quản lý toàn bộ hệ thống (Quản lý Phim, Lịch chiếu, Rạp chiếu, Thống kê Doanh thu...).
+  * `STAFF`: Nhân viên tại quầy check-in, kiểm tra và xác nhận vé xem phim thông qua việc quét mã QR.
+  * `USER`: Khách hàng xem thông tin phim, đặt vé trực tuyến, thanh toán qua cổng và quản lý lịch sử đặt vé cá nhân.
 
 ---
 
-### 🎥 Movie Management
-
-* Create / Update / Delete movies
-* Upload movie poster & trailer
-* Movie detail API
-* Weekly movie schedule
-
----
-
-### 🕒 Showtime Management
-
-* Create showtime manually
-* Auto generate showtime schedule
-* Draft showtime workflow
-* Publish draft showtimes
-* Weekly showtime API for users
+### 🎥 Quản Lý Phim (Movie Management)
+* **Quản lý thông tin phim:** CRUD đầy đủ danh sách phim (Thêm, xem, cập nhật, xóa phim).
+* **Tải lên phương tiện:** Hỗ trợ tải lên ảnh Poster và Trailer của phim trực tiếp lên Cloudinary.
+* **API chi tiết phim:** Hiển thị chi tiết về bộ phim bao gồm thể loại, thời lượng, đạo diễn, dàn diễn viên và nhãn giới hạn độ tuổi (`T16`, `T18`...).
+* **Lịch phim hàng tuần:** API phân phối phim theo lịch chiếu của từng tuần tiện lợi.
 
 ---
 
-### 🪑 Seat Management
-
-* Auto generate room seats
-* VIP / STANDARD / COUPLE seats
-* Seat locking system
-* Seat release system
+### 🕒 Quản Lý Lịch Chiếu (Showtime Management)
+* **Tạo lịch chiếu thủ công:** Quản trị viên dễ dàng thiết lập lịch chiếu cho từng phòng chiếu vào các khung giờ tùy ý.
+* **Tự động tạo lịch chiếu:** Thuật toán thông minh tự động lên lịch chiếu theo tuần nhằm tối ưu hóa thời gian trống và công suất phòng.
+* **Lịch chiếu nháp (Draft):** Hỗ trợ tạo lịch chiếu ở trạng thái Nháp (Draft) cho phép chỉnh sửa và tối ưu hóa trước khi công khai.
+* **Công bố lịch chiếu:** Xuất bản các lịch chiếu nháp để hiển thị công khai tới người dùng.
+* **API lịch chiếu tuần:** Cung cấp thông tin lịch chiếu chính xác nhất theo từng tuần cho người dùng đầu cuối.
 
 ---
 
-### 🎟️ Booking System
+### 🪑 Quản Lý Ghế Ngồi (Seat Management)
+* **Tự động tạo sơ đồ ghế:** Tự động tạo hệ thống ghế ngồi dựa trên số lượng hàng, cột và sơ đồ phòng chiếu được cấu hình.
+* **Phân loại loại ghế ngồi đa dạng:** Hỗ trợ các hạng ghế khác nhau bao gồm `VIP` (Ghế VIP), `STANDARD` (Ghế thường), `COUPLE` (Ghế đôi) với mức giá tương ứng.
+* **Giữ ghế tạm thời (Seat Locking System):** Hệ thống khóa ghế tự động khi người dùng bắt đầu thanh toán để tránh tình trạng đặt trùng ghế.
+* **Tự động giải phóng ghế:** Cơ chế tự động mở khóa ghế khi quá thời gian thanh toán (timeout) mà giao dịch chưa được hoàn tất.
 
-* Create booking
-* Booking history
-* Cancel booking
-* Booking lookup by code
+---
 
-Booking Flow:
+### 🎟️ Hệ Thống Đặt Vé (Booking System)
+* **Đặt vé thông minh:** Hỗ trợ chọn phim, suất chiếu, ghế ngồi và mua kèm các combo đồ ăn/nước uống (Food & Beverage).
+* **Lịch sử đặt vé:** Lưu trữ và xem lại chi tiết lịch sử tất cả các giao dịch đặt vé của từng tài khoản.
+* **Hủy đặt vé:** Hỗ trợ hủy đơn đặt vé và tự động hoàn trả/giải phóng các ghế đã chọn.
+* **Tra cứu vé:** Tìm kiếm thông tin đơn hàng nhanh chóng dựa trên mã code đặt vé.
 
+**Quy trình Đặt vé (Booking Flow):**
 ```text
-Select Showtime
-→ Lock Seats
-→ Create Booking (PENDING)
-→ Create Payment
-→ Payment Success
-→ Confirm Booking
-→ Generate Ticket
-→ Send Ticket Email
+Chọn suất chiếu (Showtime)
+→ Giữ ghế tạm thời (Lock Seats)
+→ Tạo đơn đặt vé (Trạng thái CHỜ THANH TOÁN - PENDING)
+→ Tạo yêu cầu thanh toán (PayOS Payment)
+→ Thanh toán thành công (Payment Success)
+→ Xác nhận đơn đặt vé (Confirm Booking)
+→ Tạo vé điện tử (Generate Ticket)
+→ Gửi email xác nhận kèm mã QR vé
 ```
 
 ---
 
-### 💳 Payment System
+### 💳 Hệ Thống Thanh Toán (Payment System)
+* **Tích hợp cổng thanh toán PayOS:** Hỗ trợ thanh toán nhanh chóng qua cổng thanh toán hiện đại PayOS.
+* **Thanh toán QR / Chuyển khoản:** Người dùng có thể thanh toán qua mã QR Ngân hàng (VietQR), Internet Banking hoặc Ví điện tử.
+* **Xử lý Webhook bảo mật:** Cơ chế lắng nghe webhook từ PayOS để cập nhật trạng thái đơn đặt vé ngay lập tức.
+* **Xác nhận giao dịch tự động:** Đơn hàng được tự động xác nhận thành công và chuyển trạng thái ngay khi nhận được tín hiệu thanh toán hợp lệ.
 
-* PayOS Integration
-* MOMO / Banking / QR Payment
-* Payment webhook handling
-* Auto booking confirmation
-
-Payment Flow:
-
+**Quy trình Thanh toán (Payment Flow):**
 ```text
-Create Booking
-→ Create PayOS Payment
-→ User Payment
-→ PayOS Webhook
-→ Booking PAID
-→ Seats SOLD
+Tạo đơn đặt vé
+→ Tạo link thanh toán PayOS
+→ Người dùng quét mã QR thanh toán
+→ Nhận Webhook từ PayOS báo thành công
+→ Đơn đặt vé cập nhật ĐÃ THANH TOÁN (Booking PAID)
+→ Trạng thái ghế chuyển sang ĐÃ BÁN (Seats SOLD)
 ```
 
 ---
 
-### 📧 E-Ticket System
+### 📧 Vé Điện Tử & Check-in (E-Ticket & Verification)
+* **Khởi tạo vé tự động:** Vé xem phim điện tử được tự động tạo ngay sau khi thanh toán thành công.
+* **Tạo mã QR xác thực:** Mỗi vé chứa một mã QR Code độc nhất mã hóa thông tin vé để bảo mật và chống làm giả.
+* **Gửi email vé điện tử:** Tự động gửi thông tin vé chi tiết kèm hình ảnh QR Code tới email người dùng qua Nodemailer.
+* **Check-in nhanh tại quầy:** Nhân viên có thể quét mã QR trên vé để xác thực và cập nhật trạng thái check-in của vé tại rạp.
 
-* Generate ticket after payment
-* Generate QR Code ticket
-* Send ticket via email
-* Staff QR ticket verification
+**Trạng thái Vé (Ticket Status):**
+* `VALID` (Vé hợp lệ, chưa sử dụng)
+* `USED` (Vé đã được sử dụng / check-in)
+* `CANCELLED` (Vé đã bị hủy bỏ)
 
-Ticket Status:
+---
 
-* VALID
-* USED
-* CANCELLED
+### 📊 Hệ Thống Thống Kê & Dashboard (Dashboard & Statistics)
+* **Tổng quan doanh thu:** Dashboard hiển thị trực quan tổng doanh thu, số lượng vé bán ra và phần trăm tăng trưởng so với tuần trước đó.
+* **Biểu đồ doanh thu 7 ngày:** Hiển thị chi tiết biến động doanh thu theo từng ngày trong tuần.
+* **Cập nhật thời gian thực:** Dữ liệu thống kê được cập nhật liên tục hỗ trợ Admin quản lý tình hình kinh doanh hiệu quả.
 
 ---
 
